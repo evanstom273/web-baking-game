@@ -6,7 +6,7 @@ import {
   recoverTechnique, finishPreparation, shapeTarget, commitShape, undoShape,
   currentComponent, workComponent, rotateBake, removeOven, returnOven, setCooling,
   finishCooling, assemble, finishAssembly, placeDecoration, judgeBake, migrateSave,
-  createSeason, getRecipe, finishRound, retryWeek,
+  createSeason, getRecipe, finishRound, retryWeek, needsBlindBake, blindBake, needsCrumbCoat, crumbCoat,
 } from '../dist/engine.js';
 
 const copy = value => JSON.parse(JSON.stringify(value));
@@ -41,7 +41,9 @@ function prepare(b, observed = new Set()) {
   for (let i = 0; i < 500; i++) {
     const step = currentTechnique(b);
     if (!step || step.done) break;
-    runFor(b, .6); b.phase = centre(step.zone); observed.add(step.expected); recordTechnique(b, step.expected);
+    if (step.rest) runFor(b, step.secondsToReady + 1);
+    else { runFor(b, .6); b.phase = centre(step.zone); }
+    observed.add(step.expected); recordTechnique(b, step.expected);
     assert.ok(i < 499, `Preparation stalled: ${b.recipeId}`);
   }
   finishPreparation(b); assert.equal(b.stage, 'shape'); return b;
@@ -50,7 +52,8 @@ function prepareWithActions(b, chooseAction = task => task.expected) {
   for (let i = 0; !currentTechnique(b).done; i++) {
     assert.ok(i < 500, `Preparation stalled: ${b.recipeId}`);
     const task = currentTechnique(b);
-    runFor(b, .6); b.phase = centre(task.zone);
+    if (task.rest) runFor(b, task.secondsToReady + 1);
+    else { runFor(b, .6); b.phase = centre(task.zone); }
     recordTechnique(b, chooseAction(task));
   }
   return b;
@@ -75,6 +78,7 @@ function finish(b, { calibratedOven = true, decorate = true } = {}) {
   if (b.stage === 'shape') shape(b);
   if (b.stage === 'bake') {
     const t = targets(b); b.heat = t.temp;
+    if (needsBlindBake(b)) blindBake(b);
     if (calibratedOven) {
       b.ovenTemp = t.temp; b.sides = [t.bake, t.bake]; b.bake = t.bake; b.ovenSeconds = t.bake; b.heatError = 0;
     } else {
@@ -92,6 +96,7 @@ function finish(b, { calibratedOven = true, decorate = true } = {}) {
       runFor(b, .6); b.phase = 52.5; b.alignment = 50; assemble(b, 'spread');
       runFor(b, .6); b.phase = 52.5; assemble(b, 'place');
     }
+    if (needsCrumbCoat(b)) crumbCoat(b);
     finishAssembly(b);
   }
   assert.equal(b.stage, 'decorate', b.recipeId);
@@ -121,7 +126,15 @@ function playOnClock(recipe, options) {
   for (let i = 0; !currentTechnique(b).done; i++) {
     assert.ok(i < 100);
     const task = currentTechnique(b);
-    waitForTiming(b, task.zone, b.nextTechniqueAt);
+    if (task.rest) {
+      // Rests run alongside component work, exactly as a baker would use them.
+      for (let j = 0; currentTechnique(b).readiness < task.window[0] + .08; j++) {
+        assert.ok(j < 5000);
+        const component = currentComponent(b);
+        if (!component.done && b.elapsed >= b.nextComponentAt && insideMiddle(b, component.zone)) workComponent(b);
+        advance(b, .02);
+      }
+    } else waitForTiming(b, task.zone, b.nextTechniqueAt);
     recordTechnique(b, task.expected);
   }
   finishPreparation(b);
@@ -133,6 +146,7 @@ function playOnClock(recipe, options) {
   }
   const target = targets(b);
   b.heat = target.temp;
+  if (needsBlindBake(b)) blindBake(b);
   for (let i = 0; b.bake < target.bake; i++) {
     assert.ok(i < 5000);
     if (!b.rotations && b.bake >= target.bake * .5) rotateBake(b);
@@ -156,6 +170,7 @@ function playOnClock(recipe, options) {
       waitForTiming(b, b.assemblyZone, b.nextAssemblyAt); assemble(b, 'spread');
       waitForTiming(b, b.assemblyZone, b.nextAssemblyAt); assemble(b, 'place');
     }
+    if (needsCrumbCoat(b)) crumbCoat(b);
     finishAssembly(b);
   }
   for (let i = 0; i < target.decor; i++) {

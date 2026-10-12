@@ -158,7 +158,7 @@ function decorationLocations(bake, count) {
   const recipe = recipeFor(bake), locations = [];
   for (let y = 175; y <= 350; y += 25) {
     for (let x = 190; x <= 515; x += 35) {
-      const snapped = snapDecoration({ kind: recipe.kind, recipeId: recipe.id, layers: recipe.assemblyParts }, x, y);
+      const snapped = snapDecoration({ kind: recipe.kind, recipeId: recipe.art || recipe.id, layers: recipe.assemblyParts }, x, y);
       if (!locations.some(point => Math.hypot(point.snapped.x - snapped.x, point.snapped.y - snapped.y) < .09)) locations.push({ x, y, snapped });
     }
   }
@@ -192,7 +192,15 @@ function playStages(ui, { mode = 'run', poor = false, stopAt = 'judged', visited
       case 'prepare':
         for (let attempt = 0; attempt < 100 && !currentTechnique(read()).done; attempt++) {
           const task = currentTechnique(read());
-          timeAction(ui, 'technique', task.expected, mode, task.zone);
+          if (task.rest) {
+            let actionsAt = -5;
+            waitFor(ui, () => {
+              const now = read(), current = currentComponent(now);
+              if (!poor && current && !current.done && now.elapsed - actionsAt >= .65 && Math.abs(now.phase - (current.zone[0] + current.zone[1]) / 2) < 3) { ui.click('component'); actionsAt = now.elapsed; }
+              return poor || currentTechnique(now).readiness >= task.window[0] + .08;
+            }, `${r.id} rest`, 2400);
+            ui.click('technique', 'ready');
+          } else timeAction(ui, 'technique', task.expected, mode, task.zone);
         }
         assert.ok(currentTechnique(read()).done, `${r.id} preparation completes`);
         ui.click('prepared');
@@ -206,6 +214,7 @@ function playStages(ui, { mode = 'run', poor = false, stopAt = 'judged', visited
         break;
       case 'bake': {
         ui.input('heat', t.temp);
+        if (!poor && ui.query('[data-action="blind-bake"]')) ui.click('blind-bake');
         let rotated = false, actionsAt = -5;
         if (!poor) {
           waitFor(ui, () => {
@@ -239,6 +248,7 @@ function playStages(ui, { mode = 'run', poor = false, stopAt = 'judged', visited
           if (!poor) timeAction(ui, 'spread', undefined, mode, b.assemblyZone || [25, 80]);
           timeAction(ui, 'place-layer', undefined, mode, b.assemblyZone || [25, 80]);
         }
+        if (!poor && ui.query('#crumb-coat') && !ui.query('#crumb-coat').disabled) ui.click('crumb-coat');
         ui.click('assembled');
         break;
       case 'decorate':
