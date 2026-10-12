@@ -119,7 +119,7 @@ export const FORMS = {
   cupcakes: { name: 'Batch of cupcakes', pieces: 6, parts: 1, shapeMode: 'portion', decor: 5, art: 'cupcake-batch', note: 'Six matching little cakes.' },
   pudding: { name: 'Baked pudding', pieces: 3, parts: 1, shapeMode: 'level', decor: 4, art: 'sunday-pudding', kind: 'dessert', family: 'dessert', note: 'Spooned warm-ish from the dish.' },
   roll: { name: 'Swiss roll', pieces: 3, parts: 2, shapeMode: 'roll', decor: 4, art: 'swiss-roll', requiresFilling: true, note: 'A spiral that shows the filling.' },
-  tiered: { name: 'Tiered celebration cake', pieces: 5, parts: 4, shapeMode: 'level', decor: 6, art: 'orchard-celebration', family: 'construction', scale: 1.4, showstopper: true, requiresFilling: true, note: 'Stacked tiers. Needs cool sponge and a steady hand.' },
+  tiered: { name: 'Tiered cake', pieces: 5, parts: 4, shapeMode: 'level', decor: 6, art: 'tiered-plain', family: 'construction', scale: 1.4, showstopper: true, requiresFilling: true, note: 'Stacked tiers. Needs cool sponge and a steady hand.' },
   'cupcake-tower': { name: 'Cupcake tower', pieces: 6, parts: 4, shapeMode: 'portion', decor: 7, art: 'celebration-cupcake-tower', family: 'construction', scale: 1.3, showstopper: true, note: 'Little cakes built into a tower.' },
   biscuits: { name: 'Tin of biscuits', pieces: 6, parts: 1, shapeMode: 'roll', decor: 3, art: 'tea-tin-shortbread', note: 'An even, matching batch.' },
   sandwich: { name: 'Sandwich biscuits', pieces: 6, parts: 2, shapeMode: 'roll', decor: 4, art: 'jam-sandwich-biscuits', requiresFilling: true, note: 'Pairs joined with a filling.' },
@@ -200,7 +200,7 @@ export function composeRecipe({ base: baseId = 'sponge', form: formId, sweetness
   const fillings = base.fillings.filter(id => !form.requiresFilling || id !== 'none');
   const recipe = {
     id: `custom-${baseKey}-${formKey}`, custom: true, base: baseKey, form: formKey,
-    name: `${base.name} ${form.name.toLowerCase()}`.replace(/^./, c => c.toUpperCase()),
+    name: `${base.short} ${form.name.toLowerCase()}`.replace(/^./, c => c.toUpperCase()),
     round: roundName, kind: form.kind, family: form.family, method: base.method,
     description: `${base.note} ${form.note}`,
     ingredients, steps: base.steps.map(step => ({ ...step })),

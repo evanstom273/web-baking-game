@@ -111,11 +111,14 @@ export function analysePresentation({ decorations = [], flavours = [], defects =
   metrics.symmetry = symmetry(decorations);
   metrics.regularity = regularity(decorations);
   const irregular = (1 - metrics.regularity) * 20 * (1 - metrics.symmetry * .6);
+  // Rings, lines, clusters and crescents all mirror about their own centre; a random scatter does not.
+  const aimless = n >= 3 ? Math.max(0, .5 - metrics.symmetry) * 18 : 0;
   const colours = new Set(decorations.map(item => item.colour ?? DECORATIONS[item.type]?.colour ?? item.type));
   metrics.colours = colours.size;
   const palette = Math.max(0, colours.size - 4) * 4;
   // A raspberry on top promises raspberry, or at least something it belongs with.
-  const welcome = new Set(flavours.flatMap(id => [id, ...(FLAVOURS[id]?.pairs ?? [])]));
+  // Pairings are listed one way round in places; either direction counts as belonging.
+  const welcome = new Set([...flavours.flatMap(id => [id, ...(FLAVOURS[id]?.pairs ?? [])]), ...Object.keys(FLAVOURS).filter(id => flavours.some(f => FLAVOURS[id].pairs?.includes(f)))]);
   const signalling = decorations.filter(item => DECORATIONS[item.type]?.signals?.length);
   metrics.relevant = signalling.filter(item => DECORATIONS[item.type].signals.some(s => flavours.includes(s))).length;
   metrics.misleading = signalling.filter(item => !DECORATIONS[item.type].signals.some(s => welcome.has(s))).length;
@@ -124,12 +127,12 @@ export function analysePresentation({ decorations = [], flavours = [], defects =
   const topHeavy = n >= 4 && structures / n > .6 ? 6 : 0;
   metrics.crowding = crowding; metrics.balance = balance;
   const quality = mean(decorations.map(item => item.quality ?? 100));
-  const decoration = clamp(quality * completion - crowding * 14 - balance - saturation - irregular - palette - misleading - topHeavy, 0, 100);
+  const decoration = clamp(quality * completion - crowding * 14 - balance - saturation - irregular - aimless - palette - misleading - topHeavy, 0, 100);
 
   if (completion < 1) notes.bad.push(`Only ${n} of the ${target} finishing details the brief asked for.`);
   if (crowding > .8) notes.bad.push('The details are piled into one spot. Give each a little room.');
   if (balance > 2) notes.bad.push(`Everything is bunched to the ${cx < .5 ? 'left' : 'right'}. The eye slides off the bake.`);
-  if (irregular > 6) notes.bad.push('The spacing looks accidental rather than deliberate.');
+  if (irregular + aimless > 6) notes.bad.push('The arrangement looks accidental rather than deliberate.');
   if (palette) notes.bad.push(`${colours.size} different colours on top is a little loud.`);
   if (misleading) notes.bad.push('The decorations promise flavours that are not inside.');
   if (topHeavy) notes.bad.push('Mostly structures and very little to eat on top.');

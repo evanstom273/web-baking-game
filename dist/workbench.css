@@ -177,10 +177,15 @@
 
 /* ---- Mobile: no sideways scrolling anywhere ----------------------------- */
 .menu, .page, .game { overflow: hidden; }
+/* Flex items default to their min-content width; the palette's long row must scroll inside, not stretch the bench. */
+.workspace, .control-tray, .play-layout > * { min-width: 0; }
 .recipe-meta { flex-wrap: wrap; row-gap: 6px; }
 .scroll-area { overflow-x: hidden; }
 @media (max-width: 720px) {
   .menu-main { overflow-x: hidden; overflow-y: auto; }
+  .recipe-options { flex-direction: column; gap: 7px; }
+  .recipe-option { min-height: 64px; }
+  .recipe-option-art { width: 72px; height: 58px; }
   .brief-tabs { margin-bottom: 14px; }
   .base-cards { grid-template-columns: 1fr 1fr; gap: 7px; }
   .base-card { padding: 9px 10px; }
@@ -196,4 +201,15 @@
 }
 @media (max-width: 370px) {
   .base-cards { grid-template-columns: 1fr; }
+}
+@media (max-height: 570px) and (orientation: landscape) {
+  /* Keep the cast reachable on short landscape phones: just the link, no tagline. */
+  .menu-bottom { display: flex; justify-content: flex-end; padding: 4px 17px; }
+  .menu-bottom span { display: none; }
+}
+@media (max-width: 720px) and (orientation: portrait) {
+  /* Richer stations can outgrow the screen: scroll the bench rather than clip the tray. */
+  .play-layout { overflow-y: auto; align-items: flex-start; overscroll-behavior: contain; }
+  .workspace { flex-shrink: 0; min-height: 100%; overflow: visible; }
+  .workspace .scene { flex: 1 0 190px; min-height: 190px; max-height: 300px; }
 }
