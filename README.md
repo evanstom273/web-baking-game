@@ -27,7 +27,7 @@ Saves use the existing browser local-storage key. Earlier bakes upgrade in place
 
 ## GitHub Pages
 
-This repository exports the complete game source from its Sites version. Pushes to `main` publish the contents of `dist/` to GitHub Pages through `.github/workflows/pages.yml`. The workflow can also be run manually from the Actions tab. In the repository's Settings → Pages, select **GitHub Actions** as the build and deployment source.
+This repository exports the complete game source from its Sites version. Pushes to `main` publish the contents of `dist/` to GitHub Pages through `.github/workflows/pages.yml`. The workflow can also be run manually from the Actions tab. During deployment every module and stylesheet address is stamped with the commit (`app.js?v=…`), so browsers never mix cached files from an older version with new ones; the source in `dist/` stays unstamped. In the repository's Settings → Pages, select **GitHub Actions** as the build and deployment source.
 
 The game is served at https://evanstom273.github.io/web-baking-game/. It needs no backend, runtime dependencies, API keys or build step.
 
