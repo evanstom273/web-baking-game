@@ -1,3 +1,5 @@
+import { visibleDefects } from './presentation.js';
+
 let artId = 0;
 const uid = () => `vb-art-${++artId}`;
 const clamp = (n,a=0,b=1) => Math.max(a,Math.min(b,Number(n)||0));
@@ -53,7 +55,7 @@ export function bowlSVG({progress=0,amount=0,mixing=false,flavour='berry'}={}){
 }
 
 function berry(x,y,r=14){return `<g transform="translate(${x} ${y})"><path d="M-${r} -3Q-${r*1.2} -${r} 0 -${r*.65}Q${r*1.2} -${r} ${r} -3Q${r*.6} ${r} 0 ${r*1.2}Q-${r*.6} ${r} -${r} -3" fill="#b54439" stroke="#8f302e" stroke-width="1.5"/><path d="M-5-4q-4 6 1 12" fill="none" stroke="#ee8970" stroke-width="3" stroke-linecap="round"/><path d="M0-${r*.5}l-7-7 6 1 3-6 3 6 6-2-6 8" fill="#65834d"/><g fill="#edb995"><ellipse cx="5" cy="1" rx="1" ry="2"/><ellipse cx="-6" cy="0" rx="1" ry="2"/><ellipse cx="1" cy="10" rx="1" ry="2"/></g></g>`}
-function cream(x,y,s=1){return `<g transform="translate(${x} ${y}) scale(${s})"><path d="M-17 5Q-23-4-10-9Q-14-18-1-23Q1-33 9-31Q1-23 11-17Q21-13 16-6Q27 3 13 7Z" fill="#fff2d3" stroke="#dfc798" stroke-width="1"/><path d="M-9-7q11 5 23 0M-5-17q8 4 14 0" fill="none" stroke="#ead4aa" stroke-width="2"/></g>`}
+function cream(x,y,s=1,fill='#fff2d3'){return `<g transform="translate(${x} ${y}) scale(${s})"><path d="M-17 5Q-23-4-10-9Q-14-18-1-23Q1-33 9-31Q1-23 11-17Q21-13 16-6Q27 3 13 7Z" fill="${fill}" stroke="#dfc798" stroke-width="1"/><path d="M-9-7q11 5 23 0M-5-17q8 4 14 0" fill="none" stroke="#ead4aa" stroke-width="2"/></g>`}
 function leaf(x,y,s=1){return `<g transform="translate(${x} ${y}) scale(${s})"><path d="M0 6Q-23-5-15-19Q5-17 4 3Q7-22 27-14Q23 5 5 8" fill="#6e905b"/><path d="M-12-15L4 8 23-10" fill="none" stroke="#a7ba83" stroke-width="1.5"/></g>`}
 
 
@@ -63,13 +65,14 @@ const componentColour=id=>/chocolate|ganache/.test(id)?'#714531':/raspberry|berr
 function methodProfile(kind,defects={}){
  const dense=clamp(defects.dense/100),weak=clamp(defects.weakDough/100),layers=clamp(defects.lostLayers/100),foam=clamp(defects.deflated/100),tough=clamp(defects.toughDough/100);
  const stated=Number.isFinite(defects.rise)?clamp(defects.rise,.45,1):1;
- return {x:1+(kind==='bread'?weak*.2:layers*.07),y:Math.max(.45,Math.min(stated,1-dense*.26-foam*.4-weak*.2-layers*.28-tough*.09))};
+ const spread=clamp(defects.spread/100);
+ return {x:1+(kind==='bread'?weak*.2:layers*.07)+spread*.12,y:Math.max(.45,Math.min(stated,1-dense*.26-foam*.4-weak*.2-layers*.28-tough*.09)-spread*.1)};
 }
 function decorationSVG(type,x,y,rotation=0,colour){
  const pink=colour||'#e5b5ba';
  let body='';
  if(type==='berry'||type==='strawberry')return berry(x,y,12);
- if(type==='cream'||type==='icing')return cream(x,y,.9);
+ if(type==='cream'||type==='icing')return `<g transform="rotate(${rotation} ${x} ${y})">${cream(x,y,.9,colour||'#fff2d3')}</g>`;
  if(type==='leaf'||type==='mint')return leaf(x,y,.85);
  if(type==='blueberry')body=`<circle r="11" fill="#596982" stroke="#394c63" stroke-width="1.5"/><circle cx="-3" cy="-3" r="6" fill="#8999ac" opacity=".65"/><path d="M1-5l3 3 4-1-1 4 2 2-4 1-3 3-2-4-4-1 4-3Z" fill="#405269"/>`;
  else if(type==='raspberry')body=`${[[-6,-5],[3,-9],[8,-2],[-8,3],[0,0],[5,6],[-3,8]].map(([a,b],i)=>`<circle cx="${a}" cy="${b}" r="5.5" fill="${i%2?'#cc6270':'#b64d63'}" stroke="#99394e" stroke-width=".8"/><circle cx="${a-1}" cy="${b-2}" r="1.5" fill="#eb99a1" opacity=".7"/>`).join('')}`;
@@ -78,14 +81,14 @@ function decorationSVG(type,x,y,rotation=0,colour){
  else if(type==='curl')body='<path d="M-18 8q28-3 32-17q7-18-7-21q-12-3-16 10q1 8 10 4q6-4 1-7" fill="none" stroke="#6e482f" stroke-width="8" stroke-linecap="round"/><path d="M-18 5q23 0 29-16" fill="none" stroke="#ad8257" stroke-width="3"/>';
  else if(type==='shard')body='<path d="M-10 10L-16-38 4-28 14-42 18 7Z" fill="#694832" stroke="#452e24" stroke-width="1.5"/><path d="M-13-30L4 1M5-25L15-9" stroke="#b99068" stroke-width="2" opacity=".6"/>';
  else if(type==='rosette')body=`<path d="M-9 9C-29 3-14-21 4-16C25-10 22 12 6 14C-9 16-18 1-6-5C2-10 11-1 6 4" fill="none" stroke="${pink}" stroke-width="10" stroke-linecap="round"/><path d="M-10 6C-21 1-12-16 3-13C17-8 18 9 6 10C-4 11-11 2-4-2" fill="none" stroke="#fff0de" stroke-width="3" stroke-linecap="round"/>`;
- else if(type==='shell')body='<path d="M-20 9Q-22-10-5-18Q6-26 15-14Q26-6 17 5Q6 14-20 9Z" fill="#f5e7c8" stroke="#d6c39e"/><path d="M-15 7L2-17M-10 8 10-13M-5 9 16-7M0 10 17 0" stroke="#d9c59f" stroke-width="2"/>';
+ else if(type==='shell')body=`<path d="M-20 9Q-22-10-5-18Q6-26 15-14Q26-6 17 5Q6 14-20 9Z" fill="${colour||'#f5e7c8'}" stroke="#d6c39e"/><path d="M-15 7L2-17M-10 8 10-13M-5 9 16-7M0 10 17 0" stroke="#d9c59f" stroke-width="2"/>`;
  else if(type==='flower')body=`${[0,1,2,3,4].map(j=>`<ellipse cy="-9" rx="6" ry="11" fill="${pink}" stroke="#c68b7c" transform="rotate(${j*72})"/>`).join('')}<circle r="5" fill="#e4b650"/>`;
  else if(type==='pearl')body=[[-8,0],[0,-5],[8,0],[0,6]].map(([a,b])=>`<circle cx="${a}" cy="${b}" r="4.5" fill="#ede4c9" stroke="#cabb99"/><circle cx="${a-1.5}" cy="${b-1.5}" r="1.5" fill="#fffbee"/>`).join('');
  else if(type==='sprinkle')body=Array.from({length:12},(_,i)=>`<path d="M${-16+(i*11)%31} ${-10+(i*7)%23}l${i%2?3:0} ${i%2?2:5}" stroke="${['#a95860','#bd9854','#8b9f7a','#f2e4c9'][i%4]}" stroke-width="2.5" stroke-linecap="round"/>`).join('');
  else if(type==='almond')body=[[-9,2,-30],[5,-4,25],[8,9,60]].map(([a,b,r])=>`<g transform="translate(${a} ${b}) rotate(${r})"><ellipse rx="5" ry="11" fill="#e2c08a" stroke="#b69158"/><path d="M0-8V8" stroke="#f9dbab" stroke-width="1.5"/></g>`).join('');
  else if(type==='pistachio')body=[[-8,-4],[3,-9],[8,2],[-2,6],[-13,8]].map(([a,b],i)=>`<path d="M${a-4} ${b-3}l7-2 3 5-6 4-5-2Z" fill="${i%2?'#a2af66':'#79925b'}" stroke="#5e7b48" stroke-width=".7"/>`).join('');
  else if(type==='meringue')body='<path d="M-18 9q-9-13 5-18q-1-8 11-13q2-8 10-13q-5 13 4 18q12 8 7 15q13 12-4 15Z" fill="#fbefcf" stroke="#dbcba7"/><path d="M-11 6q13 7 23 0M-7-4q12 7 22 2M-1-15q5 6 11 6" fill="none" stroke="#e5d5ae" stroke-width="2"/>';
- else if(type==='fondant')body='<path d="M-21 7Q-23-8-7-14Q5-23 21-12Q8-3 12 11Q-8 21-21 7Z" fill="#e7bdc4" stroke="#bb8f9b"/><path d="M-19 4Q-6-2 7 2L17-8" fill="none" stroke="#f5d7da" stroke-width="3"/>';
+ else if(type==='fondant')body=`<path d="M-21 7Q-23-8-7-14Q5-23 21-12Q8-3 12 11Q-8 21-21 7Z" fill="${colour||'#e7bdc4'}" stroke="#bb8f9b"/><path d="M-19 4Q-6-2 7 2L17-8" fill="none" stroke="#fff3e6" stroke-width="3" opacity=".6"/>`;
  else if(type==='lattice')body='<g fill="none" stroke="#ead3a1" stroke-width="5"><path d="M-25-13l39 30M-13-23l39 30M-26 6l39-29M-15 16l39-29"/></g><g fill="none" stroke="#bf9457" stroke-width="1"><path d="M-25-10l39 30M-13-20l39 30"/></g>';
  else if(type==='arch')body='<path d="M-25 5V-22a25 25 0 0 1 50 0V5" fill="none" stroke="#a47542" stroke-width="9"/><path d="M-25 5V-22a25 25 0 0 1 50 0V5" fill="none" stroke="#ecd5a3" stroke-width="5"/><path d="M-31 7h12M19 7h12" stroke="#c89562" stroke-width="4" stroke-linecap="round"/>';
  else if(type==='flag')body='<path d="M-5 10V-43" stroke="#8c7752" stroke-width="2.5"/><path d="M-3-41H27L17-28 27-17H-3Z" fill="#b86b53" stroke="#914e3c"/><path d="M2-36H17M2-31H12" stroke="#edbc91" stroke-width="2"/>';
@@ -93,11 +96,11 @@ function decorationSVG(type,x,y,rotation=0,colour){
  return `<g transform="translate(${x} ${y}) rotate(${rotation})">${body}</g>`;
 }
 
-export function foodSVG({kind='cake',recipeId='',doneness=1,quality=85,decorations=[],flavour='berry',layers=2,flavours=[],filling='none',finish='none',design='stack',shapeValues=[],assemblyScores=[],defects={},stage,assemblyIndex,alignment=50}={}){
+export function foodSVG({kind='cake',recipeId='',doneness=1,quality=85,decorations=[],flavour='berry',layers=2,flavours=[],filling='none',finish='none',design='stack',shapeValues=[],assemblyScores=[],defects={},stage,assemblyIndex,alignment=50,selected=-1}={}){
  flavour=flavours[0]||flavour;
  const palette=ART_FLAVOURS[flavour]||ART_FLAVOURS.vanilla,secondary=ART_FLAVOURS[flavours[1]]||palette,fillColour=componentColour(filling),finishColour=finish==='none'?palette.cream:componentColour(finish),lean=clamp(defects.lean,-18,18);
  const sizeFor=(i)=>shapeValues.length?clamp(.74+(Number(shapeValues[i%shapeValues.length])||50)/190,.65,1.25):1;
- const isBatch=/madeleine|cookies|biscuits|shortbread|curls|fingers|tarts|choux-buns|six-knot|cinnamon-knots|eclairs/.test(recipeId),plateY=isBatch?309:364,plateRY=isBatch?111:49;
+ const isBatch=/madeleine|cookies|biscuits|shortbread|curls|fingers|tarts|choux-buns|six-knot|cinnamon-knots|eclairs|cupcake-batch/.test(recipeId),plateY=isBatch?309:364,plateRY=isBatch?111:49;
  const p=uid(),don=clamp(doneness,0,2),gold=don<.5?'#e1c89b':don>1.45?'#5b3526':'#bd7944',light=don<.5?'#efe0bc':don>1.45?'#855135':'#e8b574',dark=don>1.45?'#38251c':'#9b5c35', chocolate=flavour==='chocolate', frosting=finish==='none'?palette.body:finishColour;
  let food='';
  if(kind==='bread'){
@@ -162,6 +165,9 @@ export function foodSVG({kind='cake',recipeId='',doneness=1,quality=85,decoratio
  const cookie=(x,y,s=1,i=0,jam=false)=>`<g transform="translate(${x} ${y}) scale(${s*sizeFor(i)})"><ellipse cy="7" rx="54" ry="34" fill="${dark}"/><ellipse rx="54" ry="33" fill="url(#${p}-crust)" stroke="${dark}" stroke-width="2"/>${jam?`<ellipse rx="44" ry="25" fill="${fillColour}"/><ellipse cy="-8" rx="51" ry="29" fill="${light}" stroke="${gold}" stroke-width="2"/><path d="M0-10C-22-29-31-1 0 9C31-1 22-29 0-10Z" fill="${fillColour}"/><path d="M-34-10q-7-2-6 4M29-20l4 2" stroke="#f8e7c3" stroke-width="3"/>`:Array.from({length:10},(_,j)=>`<path d="M${-36+(j*23)%70} ${-18+(j*11)%36}l7-3 5 6-8 4Z" fill="${flavour==='chocolate'?'#463026':'#694735'}" stroke="#4e3725" stroke-width=".6"/>`).join('')}</g>`;
  const cupcake=(x,y,s=1,i=0)=>`<g transform="translate(${x} ${y}) scale(${s*sizeFor(i)})"><path d="M-45-2H45L35 50Q0 67-35 50Z" fill="${i%2?'#b56f5d':'#92a283'}" stroke="#6d795f" stroke-width="1.5"/><path d="M-36 4l7 47m-19-46 13 47M-13 5l3 50M10 5l-2 50M32 5l-6 48" stroke="#ead7b6" stroke-width="2" opacity=".45"/><ellipse rx="46" ry="23" fill="url(#${p}-crust)" stroke="${dark}" stroke-width="2"/>${finish==='none'?`<path d="M-35-8q34-26 71 0" fill="none" stroke="${light}" stroke-width="4"/>`:`<g fill="${finishColour}" stroke="#c6af88" stroke-width="1"><path d="M-37-7q-8-17 12-20q-6-16 13-21q-1-14 17-21q-2 16 12 20q21 3 18 21q19 10 6 23q-35 18-78-2Z"/><path d="M-27-19q25 12 54 0M-17-35q18 9 35 0" fill="none" stroke="#fff0d4" stroke-width="3" opacity=".65"/></g>`}</g>`;
  const chouxTower=()=>Array.from({length:5},(_,row)=>Array.from({length:5-row},(_,col)=>bun(350+(col-(4-row)/2)*58,329-row*42,.77,row*5+col)).join('')).join('')+`<path d="M236 318q123-120 229 0M262 279q90-72 182 0M297 235q50-33 105 0" stroke="#d8a75b" stroke-width="2.5" fill="none" opacity=".7"/>`;
+ // A baker's own tiers start bare: every detail on them is one they placed.
+ if(recipeId==='tiered-plain')food=tier(296,284,48)+tier(211,223,56)+tier(128,166,51);
+ if(recipeId==='cupcake-batch')food=[[250,252],[350,232],[450,252],[250,328],[350,308],[450,328]].map(([x,y],i)=>cupcake(x,y,.62,i)).join('');
  if(recipeId==='swiss-roll'){
   food=`<path d="M214 328V243Q221 212 258 212L430 229Q485 244 482 298L459 347Z" fill="url(#${p}-crumb)" stroke="${dark}" stroke-width="2"/><path d="M225 233L412 249" stroke="${light}" stroke-width="10" fill="none" stroke-linecap="round"/><ellipse cx="430" cy="293" rx="65" ry="62" fill="${light}" stroke="${gold}" stroke-width="5"/><path d="M425 247C488 249 490 326 438 339C388 352 366 288 411 269C449 252 472 299 444 312C426 322 408 302 422 291" fill="none" stroke="${filling==='none'?palette.cream:fillColour}" stroke-width="13" stroke-linecap="round"/><path d="M244 233l127 15" stroke="#fff0d3" stroke-width="4" stroke-linecap="round" opacity=".7"/>${finish!=='none'?`<path d="M241 226q72-25 157 14" fill="none" stroke="${finishColour}" stroke-width="18" stroke-linecap="round"/>`:''}`;
  }else if(recipeId==='marble-loaf'||recipeId==='homecoming-tea-cake'){
@@ -205,21 +211,29 @@ export function foodSVG({kind='cake',recipeId='',doneness=1,quality=85,decoratio
   if(finish==='caramel-drizzle')food+=points.map(({x,y},i)=>`<path d="M${x-12} ${y-4}q12-5 25 5" fill="none" stroke="#b77733" stroke-width="3" stroke-linecap="round"/>`).join('');
   if(finish==='glaze')food+=points.map(({x,y})=>`<path d="M${x-11} ${y}q10-7 24-2" fill="none" stroke="#fff1c2" stroke-width="3" stroke-linecap="round" opacity=".65"/>`).join('');
  }
- if(defects.cracks>15)food+=`<path d="M287 262l22 9-9 9 22 8-7 9m-6-26 18-11m-5 28 19-1M402 255l-13 11 7 12-18 12" fill="none" stroke="#775435" stroke-width="${1+clamp(defects.cracks/100)*3}" stroke-linecap="round" opacity="${clamp(defects.cracks/100,.2,.8)}"/>`;
- if(defects.burnt>10){const left=(defects.sides?.[0]||1)>=(defects.sides?.[1]||1);food+=`<path d="M${left?214:474} 282q${left?12:-12} 25 ${left?20:-20} 42" fill="none" stroke="#493024" stroke-width="${4+clamp(defects.burnt/100)*15}" stroke-linecap="round" opacity="${clamp(defects.burnt/100,.15,.8)}"/>`;}
+ // Every flaw is drawn from the same visibility thresholds the judges use.
+ const v=visibleDefects(defects),baseY=plateY-6;
+ if(v.cracks)food+=`<path d="M287 262l22 9-9 9 22 8-7 9m-6-26 18-11m-5 28 19-1M402 255l-13 11 7 12-18 12" fill="none" stroke="#775435" stroke-width="${1+v.cracks*3}" stroke-linecap="round" opacity="${clamp(v.cracks*1.6,.25,.85)}"/>`;
+ if(v.burnt){const left=(defects.sides?.[0]||1)>=(defects.sides?.[1]||1);food+=`<path d="M${left?214:474} 282q${left?12:-12} 25 ${left?20:-20} 42" fill="none" stroke="#493024" stroke-width="${4+v.burnt*15}" stroke-linecap="round" opacity="${clamp(v.burnt,.15,.8)}"/>`;}
  const defectPoints=Array.from({length:12},(_,i)=>{const d=snapDecoration({kind,recipeId,layers,design},214+(i*47)%281,218+(i*29)%116);return {x:100+d.x*500,y:150+d.y*200};});
- if(defects.dense>12)food+=`<g fill="${dark}" opacity="${clamp(defects.dense/100)*.38}">${defectPoints.map(({x,y})=>`<path d="M${x-9} ${y}h7m2 4h5m-7-8h4" stroke="${dark}" stroke-width="1.5"/>`).join('')}</g>`;
- if(defects.weakDough>12)food+=`<g fill="none" stroke="${dark}" stroke-width="${1+clamp(defects.weakDough/100)*3}" opacity="${clamp(defects.weakDough/100)*.6}">${defectPoints.filter((_,i)=>i%3===0).map(({x,y})=>`<path d="M${x-18} ${y-4}l12 5-6 7 19-2 9 8m-22-13 8-7"/>`).join('')}</g>`;
- if(defects.lostLayers>12)food+=`<g fill="${gold}" opacity="${clamp(defects.lostLayers/100)*.64}">${defectPoints.filter((_,i)=>i%2===0).map(({x,y})=>`<ellipse cx="${x}" cy="${y}" rx="22" ry="9"/><path d="M${x-15} ${y-2}q15-5 31 0" stroke="${light}" stroke-width="2" fill="none"/>`).join('')}</g>`;
- if(defects.deflated>15){const d=snapDecoration({kind,recipeId,layers,design},350,253),x=100+d.x*500,y=150+d.y*200;food+=`<ellipse cx="${x}" cy="${y}" rx="${22+clamp(defects.deflated/100)*29}" ry="${8+clamp(defects.deflated/100)*11}" fill="${dark}" opacity="${clamp(defects.deflated/100)*.2}"/><path d="M${x-34} ${y-3}q34 17 68 0" stroke="${light}" stroke-width="3" fill="none" opacity=".55"/>`;}
- if(defects.scorched>8)food+=`<g fill="#493326" opacity="${clamp(defects.scorched/100)*.75}">${defectPoints.map(({x,y},i)=>`<path d="M${x-4} ${y-2}l8-3 4 5-7 4-6-2Z"/><circle cx="${x+8}" cy="${y-5}" r="${1+i%2}"/>`).join('')}</g>`;
- if(defects.toughDough>15)food+=`<g stroke="${dark}" stroke-width="1.2" fill="none" opacity="${clamp(defects.toughDough/100)*.55}">${defectPoints.filter((_,i)=>i%3===0).map(({x,y})=>`<path d="M${x-11} ${y-5}l6 7 8-3 6 8m-8-5-1 7"/>`).join('')}</g>`;
+ if(v.dense)food+=`<g fill="${dark}" opacity="${v.dense*.38}">${defectPoints.map(({x,y})=>`<path d="M${x-9} ${y}h7m2 4h5m-7-8h4" stroke="${dark}" stroke-width="1.5"/>`).join('')}</g>`;
+ if(v.weakDough)food+=`<g fill="none" stroke="${dark}" stroke-width="${1+v.weakDough*3}" opacity="${v.weakDough*.6}">${defectPoints.filter((_,i)=>i%3===0).map(({x,y})=>`<path d="M${x-18} ${y-4}l12 5-6 7 19-2 9 8m-22-13 8-7"/>`).join('')}</g>`;
+ if(v.lostLayers)food+=`<g fill="${gold}" opacity="${v.lostLayers*.64}">${defectPoints.filter((_,i)=>i%2===0).map(({x,y})=>`<ellipse cx="${x}" cy="${y}" rx="22" ry="9"/><path d="M${x-15} ${y-2}q15-5 31 0" stroke="${light}" stroke-width="2" fill="none"/>`).join('')}</g>`;
+ if(v.deflated||v.sunk){const amount=Math.max(v.deflated,v.sunk),d=snapDecoration({kind,recipeId,layers,design},350,253),x=100+d.x*500,y=150+d.y*200;food+=`<ellipse cx="${x}" cy="${y}" rx="${22+amount*40}" ry="${8+amount*14}" fill="${dark}" opacity="${.08+amount*.28}"/><path d="M${x-40-amount*20} ${y-3}q${40+amount*20} ${14+amount*20} ${80+amount*40} 0" stroke="${light}" stroke-width="3" fill="none" opacity=".55"/>`;}
+ if(v.scorched)food+=`<g fill="#493326" opacity="${v.scorched*.75}">${defectPoints.map(({x,y},i)=>`<path d="M${x-4} ${y-2}l8-3 4 5-7 4-6-2Z"/><circle cx="${x+8}" cy="${y-5}" r="${1+i%2}"/>`).join('')}</g>`;
+ if(v.toughDough)food+=`<g stroke="${dark}" stroke-width="1.2" fill="none" opacity="${v.toughDough*.55}">${defectPoints.filter((_,i)=>i%3===0).map(({x,y})=>`<path d="M${x-11} ${y-5}l6 7 8-3 6 8m-8-5-1 7"/>`).join('')}</g>`;
+ if(v.overProved)food+=`<g fill="none" stroke="${dark}" stroke-width="1.6" opacity="${.2+v.overProved*.5}">${defectPoints.filter((_,i)=>i%2).map(({x,y})=>`<path d="M${x-14} ${y}q7-5 14 0t14 0"/>`).join('')}</g>`;
+ if(v.underProved)food+=`<path d="M214 ${baseY-38}l12-9 9 10 12-11 11 9 10-8" fill="none" stroke="#f4dcae" stroke-width="${4+v.underProved*7}" stroke-linejoin="round" opacity=".9"/><path d="M214 ${baseY-35}l12-9 9 10 12-11 11 9 10-8" fill="none" stroke="${dark}" stroke-width="1.5" opacity=".6"/>`;
+ if(v.soggy)food+=`<path d="M206 ${baseY-4}q144 ${isBatch?20:44} 288 0" fill="none" stroke="#e6d6a6" stroke-width="${5+v.soggy*10}" stroke-linecap="round" opacity=".9"/>${[0,1,2,3].map(i=>`<ellipse cx="${236+i*76}" cy="${baseY+8}" rx="${5+v.soggy*5}" ry="2.5" fill="#d9c79b" opacity=".8"/>`).join('')}`;
+ if(v.shrunk)food+=`<path d="M214 ${baseY-60}q136 -52 272 0" fill="none" stroke="#6b5640" stroke-width="${2+v.shrunk*4}" stroke-dasharray="18 10" opacity="${.25+v.shrunk*.5}"/>`;
+ if(v.ooze)food+=`<g stroke="${fillColour}" stroke-width="8" stroke-linecap="round" fill="none">${[226,288,350,412,474].map((x,i)=>`<path d="M${x} ${baseY-48+(i%2)*6}q3 10 0 ${12+v.ooze*24}"/>`).join('')}</g>`;
+ if(v.crumbs)food+=`<g fill="${dark}" opacity=".55">${defectPoints.map(({x,y},i)=>`<circle cx="${x+(i%3)*6}" cy="${y-4}" r="1.6"/><circle cx="${x-7}" cy="${y+3}" r="1.1"/>`).join('')}</g>`;
  const preparation=methodProfile(kind,defects);
  if(preparation.x!==1||preparation.y!==1)food=`<g transform="translate(350 362) scale(${preparation.x} ${preparation.y}) translate(-350 -362)">${food}</g>`;
  if(defects.slumped>15)food=`<g transform="translate(350 362) scale(${1+clamp(defects.slumped/100)*.13} ${1-clamp(defects.slumped/100)*.14}) translate(-350 -362)">${food}</g>`;
  if(lean)food=`<g transform="rotate(${lean} 350 355)">${food}</g>`;
 
- const decs=decorations.map(d=>{const x=100+clamp(d.x)*500,y=150+clamp(d.y)*200,size=clamp(d.size>2?d.size/50:d.size??1,.7,1.5);return `<g transform="translate(${x} ${y}) scale(${size}) translate(${-x} ${-y})">${decorationSVG(d.type,x,y,d.rotation||0,d.colour)}</g>`;}).join('');
+ const decs=decorations.map(d=>{const x=100+clamp(d.x)*500,y=150+clamp(d.y)*200,size=clamp(d.size>2?d.size/50:d.size??1,.7,1.5);return `<g transform="translate(${x} ${y}) scale(${size}) translate(${-x} ${-y})">${decorationSVG(d.type,x,y,d.angle??d.rotation??0,d.colour)}</g>`;}).join('')+(decorations[selected]?(()=>{const d=decorations[selected],x=100+clamp(d.x)*500,y=150+clamp(d.y)*200;return `<ellipse cx="${x}" cy="${y-4}" rx="34" ry="28" fill="none" stroke="#2f6a50" stroke-width="3" stroke-dasharray="7 5"/><circle cx="${x+30}" cy="${y-26}" r="7" fill="#2f6a50"/>`;})():'');
  return svg(`<defs>${grad(p+'-crust',light,gold)}${grad(p+'-crumb',chocolate?'#a5744e':palette.body,chocolate?'#70462e':gold)}${grad(p+'-plate','#faf5de','#d2d6ba')}${grad(p+'-stand','#d5dcc4','#8d9d83')}${grad(p+'-glass','#dde5d6','#afc2b0')}</defs>${ellipseShadow(350,450,204,20)}
  <path d="M326 380H374L382 424Q393 432 406 435Q406 451 350 455Q294 451 294 435Q307 432 318 424Z" fill="url(#${p}-stand)" stroke="#8d9e84" stroke-width="2"/><path d="M336 389L330 424" stroke="#edf0d6" stroke-width="7" stroke-linecap="round"/><ellipse cx="350" cy="${plateY+8}" rx="222" ry="${plateRY}" fill="#a9b398" stroke="#849476" stroke-width="2"/><ellipse cx="350" cy="${plateY}" rx="222" ry="${plateRY}" fill="url(#${p}-plate)" stroke="#d1d7bd" stroke-width="2"/><ellipse cx="350" cy="${plateY-4}" rx="196" ry="${plateRY-13}" fill="none" stroke="#e9e9cf" stroke-width="3"/>${food}${decs}`,`A ${don>1.45?'darkly baked':don<.5?'pale':'golden'} ${kind} on a ceramic cake stand`);
 }
@@ -277,6 +291,7 @@ export function snapDecoration({kind='cake',recipeId='',layers=2,design='stack',
  else if(recipeId==='jewel-fruit-tart')candidates=[ellipse(350,280,130,36)];
  else if(recipeId==='butter-brioche')candidates=[ellipse(350,277,137,49)];
  else if(recipeId==='biscuit-carousel')candidates=[polygon([[224,207],[350,128],[478,207],[350,235]])];
+ else if(recipeId==='cupcake-batch')candidates=batch([[250,252],[350,232],[450,252],[250,328],[350,308],[450,328]],26,12);
  else if(recipeId==='celebration-cupcake-tower')candidates=batch([[260,267],[350,267],[440,267],[310,185],[390,185]],22,13);
  else if(recipeId==='celebration-banquet')candidates=[ellipse(350,168,30,10),ellipse(350,240,65,10),ellipse(350,306,103,10),ellipse(195,345,20,10),ellipse(501,345,20,10)];
  else if(recipeId==='lemon-madeleines')candidates=batch([[260,317,-32],[376,314,-12],[465,264,14],[241,232,-28],[350,222,4],[443,195,24]],34,25);
@@ -287,7 +302,7 @@ export function snapDecoration({kind='cake',recipeId='',layers=2,design='stack',
   candidates=[{x:350+150*Math.cos(angle)*ring,y:282+72*Math.sin(angle)*ring}];
  }
  else if(recipeId==='six-knot-rolls')candidates=batch([[239,235],[350,211],[460,233],[236,314],[350,299],[463,315]],35,21);
- else if(recipeId==='village-celebration'||recipeId==='orchard-celebration')candidates=[ellipse(350,166,48,11),ellipse(350,243,82,10),ellipse(350,311,124,10),ellipse(264,226,10,12),ellipse(436,226,10,12),ellipse(220,291,9,11),ellipse(480,291,9,11)];
+ else if(recipeId==='village-celebration'||recipeId==='orchard-celebration'||recipeId==='tiered-plain')candidates=[ellipse(350,166,48,11),ellipse(350,243,82,10),ellipse(350,311,124,10),ellipse(264,226,10,12),ellipse(436,226,10,12),ellipse(220,291,9,11),ellipse(480,291,9,11)];
  else if(recipeId==='vanilla-custard-tarts')candidates=batch([[248,241],[350,219],[453,241],[240,316],[350,298],[460,316]],31,11);
  else if(recipeId==='choux-buns')candidates=batch([[258,233],[350,211],[442,233],[251,311],[352,288],[455,310]],29,16);
  else if(recipeId==='viennese-curls')candidates=batch([[253,253],[365,231],[464,264],[248,328],[364,316],[464,332]],26,17);
@@ -304,8 +319,8 @@ export function snapDecoration({kind='cake',recipeId='',layers=2,design='stack',
  return {x:clamp((transformed.x-100)/500),y:clamp((transformed.y-150)/200)};
 }
 
-export function ovenSVG({heat=180,progress=0,kind='cake'}={}){
- const p=uid(),done=clamp(progress/100,0,1.8),rise=Math.min(done,1),hot=heat>150;
+export function ovenSVG({heat=180,progress=0,kind='cake',shelf='middle',steam=false,blind=false}={}){
+ const p=uid(),done=clamp(progress/100,0,1.8),rise=Math.min(done,1),hot=heat>150,dy=shelf==='top'?-52:shelf==='bottom'?28:0;
  return svg(`<defs>${grad(p+'-body','#f1e6ca','#bfb696')}${grad(p+'-steel','#e8e8dc','#8f9b90')}${grad(p+'-glass','#514a3e','#262b25')}${grad(p+'-food',done<.3?'#e7d4a5':done>1.5?'#54392b':done>1.2?'#98603b':done<.7?'#d9b788':'#e6af67',done<.3?'#b6a07a':done>1.5?'#31251d':done>1.2?'#66432b':done<.7?'#b58d5e':'#ad6b38')}<radialGradient id="${p}-glow"><stop stop-color="#eaba6e" stop-opacity=".7"/><stop offset="1" stop-color="#d59143" stop-opacity="0"/></radialGradient></defs>
  ${ellipseShadow(350,451,245,23)}
  <rect x="124" y="70" width="452" height="358" rx="23" fill="url(#${p}-body)" stroke="#a99e80" stroke-width="3"/><path d="M143 84H556" stroke="#fff8e3" stroke-width="5" stroke-linecap="round"/>
@@ -315,15 +330,17 @@ export function ovenSVG({heat=180,progress=0,kind='cake'}={}){
  <rect x="298" y="87" width="104" height="47" rx="5" fill="#4e5a46" stroke="#9eaa8c" stroke-width="3"/><text x="350" y="118" text-anchor="middle" font-family="monospace" font-size="24" fill="#e8ebbd">${Math.round(heat)}°</text>
  <rect x="153" y="174" width="394" height="223" rx="14" fill="#737c66" stroke="#9fa78c" stroke-width="4"/><rect x="171" y="191" width="358" height="188" rx="8" fill="url(#${p}-glass)"/>
  <rect x="176" y="197" width="348" height="176" rx="6" fill="url(#${p}-glow)" opacity="${hot?1:.3}"/>
- <path d="M185 329H518M185 341H518" stroke="#a6a58b" stroke-width="4" opacity=".55"/>
+ <g transform="translate(0 ${dy})"><path d="M185 329H518M185 341H518" stroke="#a6a58b" stroke-width="4" opacity=".55"/>
  ${[0,1,2,3,4,5,6,7].map(i=>`<path d="M${204+i*42} 339l-7-14" stroke="#a6a58b" stroke-width="2" opacity=".4"/>`).join('')}
  ${kind==='bread'?`<path d="M253 321Q248 ${269-rise*25} 297 ${261-rise*22}Q385 ${240-rise*12} 435 292Q454 321 433 327Z" fill="url(#${p}-food)" stroke="#785330" stroke-width="2"/><path d="M290 288l20-20m22 13 19-20m19 20 19-12" stroke="#f1cb8e" stroke-width="7" stroke-linecap="round"/>`:kind==='biscuit'?`<path d="M239 323H465L446 336H251Z" fill="#727968"/>${[273,322,371,420].map(x=>`<ellipse cx="${x}" cy="315" rx="27" ry="12" fill="url(#${p}-food)" stroke="#8e643a" stroke-width="2"/>`).join('')}`:`<path d="M259 290H445L432 329H272Z" fill="#899282" stroke="#b0b7a1" stroke-width="2"/><ellipse cx="352" cy="289" rx="94" ry="28" fill="#5f6b58"/><path d="M263 286Q277 ${256-rise*38} 352 ${258-rise*28}Q422 ${250-rise*28} 439 286Q353 315 263 286Z" fill="url(#${p}-food)" stroke="#9c733e" stroke-width="2"/><path d="M287 ${279-rise*28}Q340 ${252-rise*24} 398 ${276-rise*24}" stroke="#f4cf93" stroke-width="4" fill="none" opacity=".6"/>`}
+ ${blind?`<g fill="#c9b48c" stroke="#9f8a62" stroke-width=".8">${Array.from({length:22},(_,i)=>`<circle cx="${282+(i*37)%140}" cy="${277+(i*11)%14}" r="4"/>`).join('')}</g>`:''}</g>
+ ${steam?`<g stroke="#fbf6e4" stroke-width="7" fill="none" stroke-linecap="round" opacity=".45"><path d="M240 300q-18-22 0-44t0-40M330 290q-18-22 0-44t0-40M420 300q-18-22 0-44t0-40M490 295q-14-18 0-36"/></g>`:''}
  <path d="M187 203L300 203 220 368H187Z" fill="#fff" opacity=".065"/><path d="M392 203H444L363 368H317Z" fill="#fff" opacity=".035"/>
  <rect x="204" y="165" width="294" height="15" rx="7" fill="#7a8370"/><rect x="201" y="159" width="300" height="13" rx="6" fill="url(#${p}-steel)" stroke="#949c89"/>
  <path d="M210 162H490" stroke="#f9f5dc" stroke-width="2"/>
  <circle cx="429" cy="113" r="4" fill="${hot?'#bc6147':'#819073'}"/>
  ${hot?`<g stroke="#e0b270" opacity=".35" stroke-width="2" fill="none"><path d="M273 244q-10-14 0-24t0-18M348 230q-10-14 0-24M426 245q-10-14 0-24t0-18"/></g>`:''}
- <g transform="translate(80 328) rotate(-17)"><path d="M0 50V-22q0-22 18-22t18 22v19q4-18 16-13t8 28L43 53Z" fill="#ac614c" stroke="#854937" stroke-width="2"/><path d="M4 36l36-35M3 17l33-32M14 49l33-32" stroke="#d09273" stroke-width="2" opacity=".55"/><path d="M0 48H43V64H0Z" fill="#c38468"/></g>`, `A cream oven set to ${Math.round(heat)} degrees, with ${kind} baking inside`);
+ <g transform="translate(80 328) rotate(-17)"><path d="M0 50V-22q0-22 18-22t18 22v19q4-18 16-13t8 28L43 53Z" fill="#ac614c" stroke="#854937" stroke-width="2"/><path d="M4 36l36-35M3 17l33-32M14 49l33-32" stroke="#d09273" stroke-width="2" opacity=".55"/><path d="M0 48H43V64H0Z" fill="#c38468"/></g>`, `A cream oven set to ${Math.round(heat)} degrees, with ${kind} baking on the ${shelf} shelf${steam?' in a cloud of steam':''}`);
 }
 
 export function avatarSVG(index=0){
@@ -365,8 +382,19 @@ export function iconSVG(name){
 const pastryBoard=(p)=>`<defs>${grad(p+'-board','#d9b78a','#b48b5e')}${grad(p+'-dough','#f0dfb4','#cfb17c')}${grad(p+'-pin','#c18d54','#926039')}${grad(p+'-metal','#e0e4d7','#8d9d8c')}</defs>${ellipseShadow(350,429,267,20)}<path d="M97 197Q96 186 111 185H587Q605 185 604 204V412Q604 424 589 424H110Q97 424 97 411Z" fill="url(#${p}-board)" stroke="#a6845d" stroke-width="2"/><path d="M112 204H588M114 409H587M141 199V414M554 199V414" stroke="#ebcda3" stroke-width="2" opacity=".48"/><g stroke="#a68054" stroke-width="1" opacity=".18"><path d="M190 211q-15 82 0 186M241 211q16 75 0 186M475 211q-16 88 0 186"/><path d="M156 295q91-11 179 1t221 2M153 367q161 13 397 0"/></g><g fill="#fff5d9" opacity=".5"><ellipse cx="215" cy="346" rx="43" ry="14"/><ellipse cx="437" cy="259" rx="34" ry="9"/><circle cx="498" cy="365" r="4"/><circle cx="204" cy="244" r="3"/></g>`;
 function rollingPin(p,x=350,y=167,angle=-8){return `<g transform="translate(${x} ${y}) rotate(${angle})"><rect x="-152" y="-10" width="51" height="22" rx="9" fill="#9c7046" stroke="#805839"/><rect x="99" y="-10" width="51" height="22" rx="9" fill="#9c7046" stroke="#805839"/><rect x="-112" y="-25" width="223" height="52" rx="17" fill="url(#${p}-pin)" stroke="#94653c" stroke-width="2"/><path d="M-94-14H93" stroke="#e0b279" stroke-width="5" stroke-linecap="round"/><path d="M-104 17H103" stroke="#9c6b41" stroke-width="3"/><path d="M-141-4h23M120-4h19" stroke="#c89963" stroke-width="3" stroke-linecap="round"/></g>`;}
 
-export function techniqueSVG({type='beat',progress=0,phase=0,quality=100,flavour='vanilla'}={}){
+export function techniqueSVG({type='beat',progress=0,phase=0,quality=100,flavour='vanilla',readiness=0}={}){
  const progress01=clamp(progress),p=uid(),motion=Math.sin(clamp(phase,0,100)/100*Math.PI*2),colour=(ART_FLAVOURS[flavour]||ART_FLAVOURS.vanilla).cream;
+ if(type==='prove'){
+  // The dough domes up under a tea towel; past its peak it sags and wrinkles.
+  const r=clamp(readiness,0,1.6),peak=Math.min(r,1.15),sag=Math.max(0,r-1.22)*2.2,top=255-peak*95+sag*45;
+  const dough=`<path d="M190 262Q${200} ${top+20} 347 ${top}Q${494} ${top+20} 504 262Z" fill="url(#${p}-dough)" stroke="#c3a370" stroke-width="2"/>${sag>0?`<g fill="none" stroke="#b49565" stroke-width="2" opacity="${clamp(sag)}"><path d="M260 ${top+26}q14-7 28 0t28 0M372 ${top+22}q14-7 28 0"/></g>`:''}<g fill="#f6e7c4" opacity=".7">${Array.from({length:Math.round(4+peak*10)},(_,i)=>`<circle cx="${245+(i*37)%205}" cy="${top+18+(i*13)%30}" r="${1.5+i%3}"/>`).join('')}</g>`;
+  const towel=`<g transform="translate(470 ${top-6}) rotate(14)"><path d="M0 0H120L110 92H6Z" fill="#f4eedb" stroke="#cfc6a6" stroke-width="2"/><path d="M4 18H118M3 30H117M8 62H112M9 74H111" stroke="#b7735c" stroke-width="4"/></g>`;
+  return bowlSVG({amount:55,flavour}).replace('<g transform="rotate(',`<defs>${grad(p+'-dough','#f2e1b6','#d8bb86')}</defs>${dough}${towel}<g opacity="0" transform="rotate(`).replace('A sage ceramic mixing bowl with batter, a wooden whisk, flour and eggs',r<.9?'Dough proving in a warm bowl, still well below the rim':r>1.22?'Over-proved dough collapsing in its bowl':'Dough risen to a proud dome under a tea towel');
+ }
+ if(type==='chill'){
+  const r=clamp(readiness,0,2),cold=clamp(r/1.1);
+  return svg(`<defs>${grad(p+'-fridge','#e8eee2','#bccab7')}${grad(p+'-dough','#f0dfb4','#cfb17c')}</defs>${ellipseShadow(350,434,240,22)}<rect x="130" y="110" width="440" height="320" rx="22" fill="url(#${p}-fridge)" stroke="#94a58e" stroke-width="3"/><rect x="152" y="132" width="396" height="276" rx="12" fill="#f6f8ee" stroke="#c7d2c0" stroke-width="2"/><path d="M160 300H540" stroke="#c7d2c0" stroke-width="5"/><rect x="228" y="226" width="244" height="72" rx="10" fill="url(#${p}-dough)" stroke="#c4aa7a" stroke-width="2"/><path d="M236 238H462M236 252H462M236 266H462M236 280H462" stroke="#f3e3b6" stroke-width="2" opacity="${.4+cold*.4}"/><rect x="220" y="218" width="260" height="88" rx="14" fill="#e9f1f0" opacity="${.25+cold*.35}" stroke="#ffffff" stroke-width="2"/><g stroke="#9fb7b4" stroke-width="2.5" stroke-linecap="round" opacity="${cold}"><path d="M196 170v24M184 182h24M188 174l16 16M204 174l-16 16"/><path d="M500 176v20M490 186h20"/><path d="M330 168v16M322 176h16"/></g><rect x="500" y="320" width="22" height="70" rx="8" fill="#a8b8a2"/>`, cold<.85?'Pastry chilling in the fridge, still soft at the edges':'Pastry chilled firm in the fridge, butter layers set');
+ }
  if(type==='beat')return bowlSVG({progress:progress01*100,amount:65+progress01*25,mixing:phase>0,flavour});
  if(type==='whip'){
   let base=bowlSVG({progress:100,amount:70,mixing:phase>0,flavour:'vanilla'});

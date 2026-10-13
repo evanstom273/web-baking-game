@@ -1,13 +1,13 @@
 // The tent's recipe book. Timings are game seconds, not real cooking advice.
 export const FLAVOURS = {
-  berry: { name: 'Summer berries', colour: '#b84c67', description: 'Bright fruit with a pleasantly sharp finish.', tags: ['fruit', 'tart'], pairs: ['vanilla', 'lemon', 'chocolate', 'almond', 'coconut', 'rose'] },
+  berry: { name: 'Summer berries', colour: '#b84c67', description: 'Bright fruit with a pleasantly sharp finish.', tags: ['fruit', 'tart'], pairs: ['vanilla', 'lemon', 'chocolate', 'almond', 'coconut', 'rose', 'raspberry'] },
   lemon: { name: 'Lemon zest', colour: '#e2bc4c', description: 'Fresh citrus to lift a rich, buttery bake.', tags: ['fruit', 'citrus', 'tart'], pairs: ['berry', 'vanilla', 'herb', 'raspberry', 'almond', 'pistachio', 'ginger', 'coconut'] },
   chocolate: { name: 'Dark chocolate', colour: '#694334', description: 'Deep cocoa, a little bitterness, plenty of comfort.', tags: ['rich', 'roasted'], pairs: ['vanilla', 'coffee', 'orange', 'raspberry', 'berry', 'coconut', 'almond', 'pistachio', 'hazelnut', 'caramel', 'ginger'] },
   vanilla: { name: 'Vanilla bean', colour: '#e4caa0', description: 'A gentle classic that lets your technique shine.', tags: ['sweet', 'warm'], pairs: ['berry', 'lemon', 'chocolate', 'coffee', 'orange', 'raspberry', 'coconut', 'almond', 'pistachio', 'hazelnut', 'cinnamon', 'ginger', 'caramel', 'rose'] },
   herb: { name: 'Garden rosemary', colour: '#668768', description: 'A fragrant, savoury touch from the kitchen garden.', tags: ['herbal', 'savoury'], pairs: ['lemon', 'orange', 'almond'] },
   coffee: { name: 'Fresh coffee', colour: '#78563e', description: 'Roasted warmth for creams, sponges and chocolate bakes.', tags: ['roasted', 'rich'], pairs: ['chocolate', 'vanilla', 'hazelnut', 'caramel', 'cinnamon'] },
   orange: { name: 'Orange zest', colour: '#db8b40', description: 'A rounded citrus note with a sunny peel finish.', tags: ['fruit', 'citrus'], pairs: ['chocolate', 'vanilla', 'almond', 'cinnamon', 'ginger', 'herb', 'caramel'] },
-  raspberry: { name: 'Raspberry', colour: '#b3476b', description: 'A clean, sharp fruit flavour that cuts through rich fillings.', tags: ['fruit', 'tart'], pairs: ['chocolate', 'vanilla', 'lemon', 'almond', 'pistachio', 'rose', 'coconut'] },
+  raspberry: { name: 'Raspberry', colour: '#b3476b', description: 'A clean, sharp fruit flavour that cuts through rich fillings.', tags: ['fruit', 'tart'], pairs: ['chocolate', 'vanilla', 'lemon', 'almond', 'pistachio', 'rose', 'coconut', 'berry'] },
   coconut: { name: 'Toasted coconut', colour: '#d6cbb4', description: 'Gentle sweetness and a toasted, nutty edge.', tags: ['sweet', 'toasted'], pairs: ['chocolate', 'vanilla', 'lemon', 'berry', 'raspberry', 'caramel', 'ginger'] },
   almond: { name: 'Almond', colour: '#c7a77a', description: 'A mellow nuttiness that works especially well with fruit.', tags: ['nut', 'sweet'], pairs: ['berry', 'lemon', 'chocolate', 'vanilla', 'orange', 'raspberry', 'herb', 'rose', 'cinnamon'] },
   pistachio: { name: 'Pistachio', colour: '#99a56b', description: 'A delicate green nuttiness for elegant creams and pastry.', tags: ['nut', 'delicate'], pairs: ['vanilla', 'lemon', 'raspberry', 'rose', 'chocolate', 'caramel'] },
@@ -17,15 +17,69 @@ export const FLAVOURS = {
   caramel: { name: 'Salted caramel', colour: '#bf8340', description: 'Buttery sweetness with a small pinch of salt.', tags: ['sweet', 'rich'], pairs: ['chocolate', 'vanilla', 'coffee', 'coconut', 'pistachio', 'hazelnut', 'cinnamon', 'ginger', 'orange'] },
   rose: { name: 'Rosewater', colour: '#ce9aac', description: 'A gentle floral accent: a little gives the loveliest result.', tags: ['floral', 'delicate'], pairs: ['vanilla', 'berry', 'raspberry', 'almond', 'pistachio'] },
 };
+// Delicate flavours turn soapy or medicinal when pushed; robust ones disappear when timid.
+const INTENSITY = { rose: 'delicate', herb: 'delicate', pistachio: 'delicate', almond: 'delicate', chocolate: 'robust', coffee: 'robust', ginger: 'robust', cinnamon: 'robust', caramel: 'robust' };
+for (const [id, flavour] of Object.entries(FLAVOURS)) flavour.intensity = INTENSITY[id] ?? 'gentle';
+export const STRENGTHS = {
+  subtle: { name: 'A whisper', note: 'Lets the bake itself lead.' },
+  balanced: { name: 'Balanced', note: 'Clearly there, never shouting.' },
+  bold: { name: 'Bold', note: 'Unmistakable. Wonderful or overpowering.' },
+};
 
 export const RIVALS = [
-  { id: 'maeve', name: 'Maeve', job: 'Retired librarian', trait: 'Measures twice. Has never trusted a fan oven.', speciality: 0, skill: 70, colour: '#799b83' },
-  { id: 'rafi', name: 'Rafi', job: 'Cycle mechanic', trait: 'Builds beautiful things, including rather unstable cakes.', speciality: 3, skill: 73, colour: '#bd8553' },
-  { id: 'jules', name: 'Jules', job: 'Primary school teacher', trait: 'Always has spare biscuits and a reassuring word.', speciality: 1, skill: 65, colour: '#b87b8f' },
-  { id: 'arthur', name: 'Arthur', job: 'Bus driver', trait: 'Treats proving dough like a very important passenger.', speciality: 2, skill: 76, colour: '#738fa4' },
-  { id: 'nia', name: 'Nia', job: 'Florist', trait: 'Brilliant with colour. The washing-up can wait.', speciality: 4, skill: 68, colour: '#9a83ac' },
-  { id: 'benji', name: 'Benji', job: 'Community gardener', trait: 'Will put an herb in anything if nobody stops him.', speciality: 2, skill: 60, colour: '#95a258' },
-  { id: 'lottie', name: 'Lottie', job: 'Cinema projectionist', trait: 'Quietly ambitious, until the caramel starts smoking.', speciality: 4, skill: 63, colour: '#ca946d' },
+  {
+    id: 'maeve', name: 'Maeve', job: 'Retired librarian', trait: 'Measures twice. Has never trusted a fan oven.', speciality: 0, skill: 70, colour: '#799b83',
+    temperament: .55, strengths: { categories: ['baking', 'flavour'], methods: ['cream', 'rub'] }, weaknesses: { categories: ['presentation'], rounds: ['Showstopper'] },
+    favourites: ['lemon', 'vanilla', 'almond'], bases: ['sponge', 'shortcrust'],
+    mishaps: [{ when: { round: 'Showstopper' }, text: 'Ran out of time: the top tier went out barely dressed.', hit: { presentation: -15 }, decorScale: .35 }],
+    quips: ['I weighed everything twice. Then once more, for luck.', 'A sponge is only a sponge if it springs back. Mine did.', 'I don’t do drama. I do a level bake.'],
+  },
+  {
+    id: 'rafi', name: 'Rafi', job: 'Cycle mechanic', trait: 'Builds beautiful things, including rather unstable cakes.', speciality: 3, skill: 73, colour: '#bd8553',
+    temperament: 1.15, strengths: { categories: ['presentation'], families: ['construction', 'pastry'] }, weaknesses: { categories: ['texture'], minParts: 3 },
+    favourites: ['coffee', 'chocolate', 'orange'], bases: ['choux', 'rough-puff', 'genoise'],
+    mishaps: [{ when: { minParts: 3 }, text: 'The structure developed a definite lean in the last ten minutes.', hit: { presentation: -14, texture: -4 }, defects: { lean: 13 } }],
+    quips: ['It’s basically a bike frame. With custard.', 'Engineering is just baking with fewer sprinkles.', 'If it leans, call it modern.'],
+  },
+  {
+    id: 'jules', name: 'Jules', job: 'Primary school teacher', trait: 'Always has spare biscuits and a reassuring word.', speciality: 1, skill: 65, colour: '#b87b8f',
+    temperament: .85, strengths: { categories: ['flavour'], kinds: ['biscuit'] }, weaknesses: { kinds: ['bread'], categories: ['presentation'] },
+    favourites: ['vanilla', 'raspberry', 'cinnamon'], bases: ['shortbread', 'sponge'],
+    mishaps: [{ when: { kind: 'bread' }, text: 'The dough never really woke up. Under-proved and tight.', hit: { texture: -15, baking: -5 }, defects: { underProved: 45, dense: 30 } }],
+    quips: ['I made a spare batch for the camera crew.', 'My class voted on the flavour. Democracy is terrifying.', 'Biscuits are just tiny hugs, aren’t they?'],
+  },
+  {
+    id: 'arthur', name: 'Arthur', job: 'Bus driver', trait: 'Treats proving dough like a very important passenger.', speciality: 2, skill: 76, colour: '#738fa4',
+    temperament: .7, strengths: { categories: ['texture', 'baking'], methods: ['knead'] }, weaknesses: { methods: ['laminate', 'rub'], kinds: ['pastry'] },
+    favourites: ['herb', 'cinnamon', 'orange'], bases: ['lean', 'enriched'],
+    mishaps: [{ when: { kind: 'pastry' }, text: 'Warm hands: the butter smeared and the layers merged.', hit: { texture: -15, presentation: -4 }, defects: { lostLayers: 55 } }],
+    quips: ['Proved it for exactly the length of the 42 bus route.', 'Dough’s like passengers. Be firm, but kind.', 'You can’t rush a good loaf. Or the ring road.'],
+  },
+  {
+    id: 'nia', name: 'Nia', job: 'Florist', trait: 'Brilliant with colour. The washing-up can wait.', speciality: 4, skill: 68, colour: '#9a83ac',
+    temperament: 1, strengths: { categories: ['presentation'] }, weaknesses: { categories: ['flavour'] },
+    favourites: ['rose', 'raspberry', 'pistachio'], bases: ['meringue', 'sponge', 'genoise'],
+    mishaps: [{ when: {}, text: 'Gorgeous to look at, but the rosewater ran away with her.', hit: { flavour: -15 } }],
+    quips: ['I arranged it like a June bouquet.', 'Colour first. Then I remembered it has to taste of something.', 'Everything’s edible. Probably.'],
+  },
+  {
+    id: 'benji', name: 'Benji', job: 'Community gardener', trait: 'Will put an herb in anything if nobody stops him.', speciality: 2, skill: 60, colour: '#95a258',
+    temperament: 1.45, strengths: { kinds: ['bread'], categories: ['texture'] }, weaknesses: { categories: ['flavour'], kinds: ['cake', 'dessert'] },
+    favourites: ['herb', 'lemon', 'ginger'], bases: ['lean', 'enriched', 'shortcrust'],
+    mishaps: [{ when: { sweet: true }, text: 'Thyme in the buttercream divided the judges. Mostly against.', hit: { flavour: -17 } }],
+    quips: ['There’s rosemary in it. Obviously.', 'Grew the lemons myself. Well, the lemon. Singular.', 'Mabel’s face did a thing. Good thing? Hard to say.'],
+  },
+  {
+    id: 'lottie', name: 'Lottie', job: 'Cinema projectionist', trait: 'Quietly ambitious, until the caramel starts smoking.', speciality: 4, skill: 63, colour: '#ca946d',
+    temperament: 1.3, strengths: { categories: ['presentation'], kinds: ['dessert', 'cake'] }, weaknesses: { categories: ['baking'], methods: ['cook', 'custard'] },
+    favourites: ['caramel', 'chocolate', 'coffee'], bases: ['choux', 'custard', 'sponge'],
+    mishaps: [{ when: {}, text: 'The caramel caught. Bitter edges and a dark crust.', hit: { baking: -14, flavour: -6 }, defects: { burnt: 38, scorched: 30 }, doneness: 1.38 }],
+    quips: ['I like a bit of jeopardy. Apparently.', 'It’s a big finish. Like a film, but sticky.', 'Was that smoke? That was smoke.'],
+  },
+];
+export const JUDGES = [
+  { id: 'mabel', name: 'Mabel', cares: 'Flavour, balance and restraint. Suspicious of florals.' },
+  { id: 'hugh', name: 'Hugh', cares: 'Technique, the bake and the base. Rarely shakes hands.' },
 ];
 
 export const WEEKS = [
@@ -233,6 +287,17 @@ export const COMPONENTS = [
   { id: 'caramel-drizzle', name: 'Caramel drizzle', role: 'finish', colour: '#b97b35', flavours: ['caramel', 'chocolate', 'coffee', 'vanilla', 'hazelnut', 'cinnamon', 'ginger', 'orange'], families: FAMILIES, work: 7, method: 'heat' },
 ];
 
+// Wet fillings soak an unsealed pastry case; sweetness and richness feed the judges' sense of balance.
+const COMPONENT_TRAITS = {
+  'berry-jam': { wet: true, sweet: 2 }, 'lemon-curd': { wet: true, sweet: 1 }, ganache: { sweet: 1, rich: 2 },
+  buttercream: { sweet: 2, rich: 2 }, 'vanilla-custard': { wet: true, sweet: 1, rich: 1 }, 'whipped-cream': { wet: true, rich: 1 },
+  'salted-caramel': { wet: true, sweet: 2, rich: 2 }, praline: { sweet: 1, rich: 2 }, 'cream-cheese': { wet: true, rich: 2 },
+  'herb-butter': { rich: 1 }, 'cinnamon-butter': { sweet: 1, rich: 1 }, 'fruit-compote': { wet: true, sweet: 1 },
+  glaze: { sweet: 1 }, icing: { sweet: 2, coat: true }, 'chocolate-coat': { sweet: 1, rich: 1, coat: true },
+  'cream-finish': { rich: 1, coat: true }, 'nut-crunch': {}, 'meringue-finish': { sweet: 2 }, 'seed-crust': {}, 'caramel-drizzle': { sweet: 2 },
+};
+for (const component of COMPONENTS) Object.assign(component, { wet: false, sweet: 0, rich: 0, coat: false }, COMPONENT_TRAITS[component.id]);
+
 const decoration = (name, colour, style = 'place', families = FAMILIES, work = 2) => ({ name, colour, style, families, work });
 export const DECORATIONS = {
   berry: decoration('Strawberry', '#ba4e55'),
@@ -258,8 +323,14 @@ export const DECORATIONS = {
   arch: decoration('Sugar arch', '#d9b895', 'structure', ['cake', 'dessert', 'construction'], 4),
   flag: decoration('Little fête flag', '#b97063', 'structure', FAMILIES, 3),
 };
+// What a decoration promises about the flavour inside. Unlisted details are neutral.
+const SIGNALS = { berry: ['berry'], blueberry: ['berry'], raspberry: ['raspberry', 'berry'], lemon: ['lemon'], orange: ['orange'], chocolate: ['chocolate'], curl: ['chocolate'], shard: ['chocolate'], leaf: ['herb'], flower: ['rose'], almond: ['almond'], pistachio: ['pistachio'] };
+const COLOURABLE = ['cream', 'rosette', 'shell', 'flower', 'fondant'];
+for (const [id, item] of Object.entries(DECORATIONS)) { item.signals = SIGNALS[id] ?? []; item.colourable = COLOURABLE.includes(id); }
 
 const S = (type, cycles) => ({ type, cycles });
+// Rests are timed by the baker, not tapped: `rest` is the ideal number of seconds.
+const R = (type, rest) => ({ type, cycles: 1, rest });
 const CAKE_DECOR = ['berry', 'blueberry', 'raspberry', 'lemon', 'orange', 'curl', 'shard', 'cream', 'rosette', 'shell', 'flower', 'pearl', 'sprinkle', 'almond', 'pistachio', 'meringue', 'fondant', 'arch', 'flag'];
 const BISCUIT_DECOR = ['chocolate', 'curl', 'rosette', 'shell', 'flower', 'pearl', 'sprinkle', 'almond', 'pistachio', 'fondant', 'flag'];
 const BREAD_DECOR = ['leaf', 'lemon', 'orange', 'almond', 'pistachio', 'flag'];
@@ -280,12 +351,12 @@ const DEFAULT_DETAILS = {
   'tea-tin-shortbread': { method: 'rub', family: 'biscuit', steps: [S('rub', 3), S('fold', 2)], shapeMode: 'roll', pieces: 6, assemblyParts: 1, flavours: ['vanilla', 'lemon', 'orange', 'chocolate', 'almond', 'ginger', 'rose'] },
   'viennese-curls': { method: 'cream', family: 'biscuit', steps: [S('beat', 3), S('fold', 2)], shapeMode: 'pipe', pieces: 6, assemblyParts: 1, flavours: ['vanilla'], fillings: ['none'], finishes: ['chocolate-coat'], prescribed: { flavours: ['vanilla'], filling: 'none', finish: 'chocolate-coat' } },
   'biscuit-greenhouse': { method: 'rub', family: 'construction', steps: [S('rub', 3), S('fold', 2)], shapeMode: 'roll', pieces: 5, assemblyParts: 5, flavours: ['vanilla', 'ginger', 'cinnamon', 'chocolate', 'orange', 'almond'], fillings: ['none', 'ganache', 'buttercream'], finishes: ['icing', 'chocolate-coat'], decorationIds: ['flower', 'leaf', 'pearl', 'fondant', 'arch', 'flag', 'lattice', 'chocolate'] },
-  'village-bloomer': { method: 'knead', family: 'bread', steps: [S('knead', 4), S('fold', 2)], shapeMode: 'portion', pieces: 3, assemblyParts: 1, flavours: ['herb', 'lemon', 'orange', 'almond'], fillings: ['none', 'herb-butter'], finishes: ['none', 'seed-crust', 'glaze'] },
-  'six-knot-rolls': { method: 'knead', family: 'bread', steps: [S('knead', 3), S('fold', 2)], shapeMode: 'plait', pieces: 6, assemblyParts: 1, flavours: ['herb'], fillings: ['none'], finishes: ['seed-crust'], prescribed: { flavours: ['herb'], filling: 'none', finish: 'seed-crust' } },
-  'harvest-wreath': { method: 'knead', family: 'bread', steps: [S('knead', 4), S('fold', 3)], shapeMode: 'plait', pieces: 5, assemblyParts: 3, flavours: ['herb', 'lemon', 'orange', 'almond', 'cinnamon', 'ginger'], fillings: ['none', 'herb-butter', 'cinnamon-butter'], finishes: ['seed-crust', 'glaze', 'nut-crunch'] },
-  'orchard-galette': { method: 'rub', family: 'tart', steps: [S('rub', 3), S('fold', 2)], shapeMode: 'roll', pieces: 3, assemblyParts: 2, flavours: ['vanilla', 'cinnamon', 'ginger', 'almond', 'lemon', 'berry'], fillings: ['fruit-compote', 'vanilla-custard', 'lemon-curd'], finishes: ['none', 'glaze', 'nut-crunch', 'cream-finish'] },
+  'village-bloomer': { method: 'knead', family: 'bread', steps: [S('knead', 4), S('fold', 2), R('prove', 14)], shapeMode: 'portion', pieces: 3, assemblyParts: 1, flavours: ['herb', 'lemon', 'orange', 'almond'], fillings: ['none', 'herb-butter'], finishes: ['none', 'seed-crust', 'glaze'] },
+  'six-knot-rolls': { method: 'knead', family: 'bread', steps: [S('knead', 3), S('fold', 2), R('prove', 12)], shapeMode: 'plait', pieces: 6, assemblyParts: 1, flavours: ['herb'], fillings: ['none'], finishes: ['seed-crust'], prescribed: { flavours: ['herb'], filling: 'none', finish: 'seed-crust' } },
+  'harvest-wreath': { method: 'knead', family: 'bread', steps: [S('knead', 4), S('fold', 3), R('prove', 14)], shapeMode: 'plait', pieces: 5, assemblyParts: 3, flavours: ['herb', 'lemon', 'orange', 'almond', 'cinnamon', 'ginger'], fillings: ['none', 'herb-butter', 'cinnamon-butter'], finishes: ['seed-crust', 'glaze', 'nut-crunch'] },
+  'orchard-galette': { method: 'rub', family: 'tart', steps: [S('rub', 3), S('fold', 2), R('chill', 10)], shapeMode: 'roll', pieces: 3, assemblyParts: 2, flavours: ['vanilla', 'cinnamon', 'ginger', 'almond', 'lemon', 'berry'], fillings: ['fruit-compote', 'vanilla-custard', 'lemon-curd'], finishes: ['none', 'glaze', 'nut-crunch', 'cream-finish'] },
   'choux-buns': { method: 'choux', family: 'pastry', steps: [S('cook', 2), S('beat', 3)], shapeMode: 'pipe', pieces: 6, assemblyParts: 2, flavours: ['vanilla'], fillings: ['vanilla-custard'], finishes: ['chocolate-coat'], prescribed: { flavours: ['vanilla'], filling: 'vanilla-custard', finish: 'chocolate-coat' } },
-  'pastry-sunburst': { method: 'laminate', family: 'pastry', steps: [S('rub', 2), S('laminate', 3)], shapeMode: 'roll', pieces: 6, assemblyParts: 3, flavours: ['chocolate', 'orange', 'vanilla', 'almond', 'hazelnut', 'cinnamon', 'caramel'], fillings: ['ganache', 'praline', 'vanilla-custard'], finishes: ['glaze', 'icing', 'nut-crunch'] },
+  'pastry-sunburst': { method: 'laminate', family: 'pastry', steps: [S('rub', 2), S('laminate', 2), R('chill', 9), S('laminate', 2)], shapeMode: 'roll', pieces: 6, assemblyParts: 3, flavours: ['chocolate', 'orange', 'vanilla', 'almond', 'hazelnut', 'cinnamon', 'caramel'], fillings: ['ganache', 'praline', 'vanilla-custard'], finishes: ['glaze', 'icing', 'nut-crunch'] },
   'sunday-pudding': { method: 'cream', family: 'dessert', steps: [S('beat', 3), S('fold', 2)], shapeMode: 'portion', pieces: 4, assemblyParts: 1, flavours: ['chocolate', 'vanilla', 'cinnamon', 'ginger', 'caramel', 'orange', 'coffee'], fillings: ['none', 'salted-caramel', 'ganache'], finishes: ['cream-finish', 'caramel-drizzle', 'chocolate-coat', 'nut-crunch'] },
   'vanilla-custard-tarts': { method: 'custard', family: 'tart', steps: [S('cook', 3), S('fold', 2)], shapeMode: 'line', pieces: 6, assemblyParts: 2, flavours: ['vanilla'], fillings: ['vanilla-custard'], finishes: ['glaze'], prescribed: { flavours: ['vanilla'], filling: 'vanilla-custard', finish: 'glaze' } },
   'pudding-garden': { method: 'foam', family: 'dessert', steps: [S('whip', 3), S('fold', 3)], shapeMode: 'level', pieces: 4, assemblyParts: 3, flavours: ['chocolate', 'coffee', 'hazelnut', 'caramel', 'vanilla', 'raspberry', 'orange'], fillings: ['ganache', 'praline', 'whipped-cream', 'salted-caramel'], finishes: ['chocolate-coat', 'cream-finish', 'nut-crunch'], decorationIds: ['berry', 'raspberry', 'shard', 'curl', 'cream', 'rosette', 'leaf', 'flower', 'pistachio', 'meringue', 'arch'] },
@@ -294,7 +365,22 @@ const DEFAULT_DETAILS = {
   'village-celebration': { method: 'cream', family: 'construction', steps: [S('beat', 4), S('fold', 3)], shapeMode: 'level', pieces: 5, assemblyParts: 5, flavours: SWEET_FLAVOURS, fillings: CAKE_FILLINGS.filter(id => id !== 'none'), finishes: CAKE_FINISHES.filter(id => id !== 'none'), decorationIds: CAKE_DECOR },
 };
 
-function enrich(recipe, details = {}) {
+// What each ingredient does in the bake decides what a mis-measure actually causes.
+export function ingredientRole(name) {
+  const n = String(name).toLowerCase();
+  if (/yeast|baking powder|bicarb|raising agent/.test(n)) return 'leaven';
+  if (/\bsalt\b/.test(n)) return 'salt';
+  if (/sugar|syrup|honey/.test(n)) return 'sugar';
+  if (/egg|yolk|white/.test(n)) return 'egg';
+  if (/chunks|apples|fruit|nuts|seeds|raisins/.test(n)) return 'inclusion';
+  if (/dark chocolate/.test(n)) return 'flavour';
+  if (/flour|cornflour|ground almonds|crumbs|pastry/.test(n)) return 'flour';
+  if (/water|milk|juice|double cream/.test(n)) return 'liquid';
+  if (/butter|oil|cream cheese/.test(n)) return 'fat';
+  return 'flavour';
+}
+
+export function enrich(recipe, details = {}) {
   Object.assign(recipe, details);
   const family = recipe.family;
   if (!recipe.fillings) recipe.fillings = family === 'biscuit' || family === 'cookie' ? [...BISCUIT_FILLINGS] : family === 'bread' ? ['none', 'herb-butter', 'cinnamon-butter'] : ['pastry', 'tart', 'pie'].includes(family) ? [...PASTRY_FILLINGS] : [...CAKE_FILLINGS];
@@ -306,7 +392,11 @@ function enrich(recipe, details = {}) {
   recipe.ingredients = recipe.ingredients.map(ingredient => ({
     ...ingredient,
     flow: ingredient.flow || (/flour|cocoa|starch|baking powder|icing sugar/i.test(ingredient.name) ? 'powder' : /melted butter|water|milk|cream|eggs|yolks|whites|juice/i.test(ingredient.name) ? 'liquid' : /butter|syrup|honey|pastry|cream cheese/i.test(ingredient.name) ? 'sticky' : 'grain'),
+    role: ingredient.role || ingredientRole(ingredient.name),
   }));
+  // A lined case holds the filling directly against raw pastry: the base needs extra heat.
+  recipe.needsCase ??= recipe.shapeMode === 'line';
+  recipe.profile ??= { sweetness: 0, richness: 0 };
   return recipe;
 }
 
@@ -378,28 +468,28 @@ const EXTRA_RECIPES = [
   }),
   extraRecipe(2, 0, {
     id: 'garden-focaccia', name: 'Kitchen-garden focaccia', description: 'Make a broad, airy loaf with dimples, a gleaming crust and a fragrant garden finish.',
-    method: 'knead', family: 'bread', kind: 'bread', steps: [S('knead', 3), S('fold', 3)], shapeMode: 'level', pieces: 3, assemblyParts: 1,
+    method: 'knead', family: 'bread', kind: 'bread', steps: [S('knead', 3), S('fold', 3), R('prove', 12)], shapeMode: 'level', pieces: 3, assemblyParts: 1,
     ingredients: [ingredient('Strong bread flour', 400), ingredient('Warm water', 300, 'ml'), ingredient('Olive oil', 40, 'ml', 'liquid'), ingredient('Fast-action yeast', 7)],
     temp: 215, bakeTime: 26, coolTime: 7, flavours: ['herb', 'lemon', 'orange', 'almond'], fillings: ['none', 'herb-butter'], finishes: ['seed-crust', 'glaze', 'none'],
     tip: 'Fold the wet dough patiently. The aim is airy bread, with a level base beneath those dimples.', technicalHint: 'Gentle folds retain air in a wetter dough.', decorTarget: 4,
   }),
   extraRecipe(2, 0, {
     id: 'cinnamon-knots', name: 'Cinnamon breakfast knots', description: 'Knead a soft dough, add a buttery filling and twist it into a generous batch of breakfast knots.',
-    method: 'knead', family: 'bread', kind: 'bread', steps: [S('knead', 4), S('fold', 2)], shapeMode: 'plait', pieces: 6, assemblyParts: 2,
+    method: 'knead', family: 'bread', kind: 'bread', steps: [S('knead', 4), S('fold', 2), R('prove', 12)], shapeMode: 'plait', pieces: 6, assemblyParts: 2,
     ingredients: [ingredient('Strong bread flour', 350), ingredient('Warm milk', 210, 'ml'), ingredient('Soft butter', 60), ingredient('Fast-action yeast', 7)],
     temp: 190, bakeTime: 27, coolTime: 8, flavours: ['cinnamon', 'vanilla', 'orange', 'caramel', 'ginger', 'almond'], fillings: ['cinnamon-butter', 'salted-caramel', 'cream-cheese'], finishes: ['icing', 'caramel-drizzle', 'nut-crunch', 'glaze'],
     tip: 'Keep the filling thin so it stays inside the twists. Similar knots will bake at the same pace.', technicalHint: 'Elastic dough makes tidy knots.', decorTarget: 4,
   }),
   extraRecipe(2, 2, {
     id: 'woven-bread-basket', name: 'The woven harvest basket', description: 'Weave dough into an edible basket and assemble it with a generous collection of little rolls.',
-    method: 'knead', family: 'construction', kind: 'bread', steps: [S('knead', 4), S('fold', 3)], shapeMode: 'plait', pieces: 6, assemblyParts: 5,
+    method: 'knead', family: 'construction', kind: 'bread', steps: [S('knead', 4), S('fold', 3), R('prove', 14)], shapeMode: 'plait', pieces: 6, assemblyParts: 5,
     ingredients: [ingredient('Strong bread flour', 550), ingredient('Warm water', 340, 'ml'), ingredient('Olive oil', 35, 'ml', 'liquid'), ingredient('Fast-action yeast', 10)],
     temp: 200, bakeTime: 34, coolTime: 10, flavours: ['herb', 'lemon', 'orange', 'almond', 'cinnamon', 'ginger'], fillings: ['none', 'herb-butter', 'cinnamon-butter'], finishes: ['seed-crust', 'glaze', 'nut-crunch'],
     decorationIds: ['leaf', 'lemon', 'orange', 'almond', 'pistachio', 'flag'], tip: 'Make the woven strands an even thickness. A strong base will carry the basket handle.', technicalHint: 'Tidy, well-supported joins matter more than a hurried flourish.', decorTarget: 6,
   }),
   extraRecipe(3, 0, {
     id: 'summer-fruit-pie', name: 'Lattice-top fruit pie', description: 'Line a pie dish, add a generous fruit filling and finish with a neatly woven pastry lid.',
-    method: 'rub', family: 'pie', kind: 'pastry', steps: [S('rub', 3), S('fold', 2)], shapeMode: 'line', pieces: 4, assemblyParts: 2,
+    method: 'rub', family: 'pie', kind: 'pastry', steps: [S('rub', 3), S('fold', 2), R('chill', 10)], shapeMode: 'line', pieces: 4, assemblyParts: 2,
     ingredients: [ingredient('Plain flour', 300), ingredient('Cold butter', 150), ingredient('Cold water', 90, 'ml'), ingredient('Mixed orchard fruit', 300)],
     temp: 200, bakeTime: 31, coolTime: 8, flavours: ['berry', 'raspberry', 'vanilla', 'cinnamon', 'ginger', 'lemon', 'almond'], fillings: ['fruit-compote', 'berry-jam', 'vanilla-custard'], finishes: ['glaze', 'cream-finish', 'none'],
     tip: 'Keep the pastry thickness even around the dish, especially where the base meets the sides.', technicalHint: 'A neat lining and a properly baked base make a good pie.', decorTarget: 4,
@@ -441,14 +531,14 @@ const EXTRA_RECIPES = [
   }),
   extraRecipe(5, 0, {
     id: 'jewel-fruit-tart', name: 'Jewel-box fruit tart', description: 'Make a crisp pastry case, add a smooth filling and arrange a colourful, jewel-like finish.',
-    method: 'rub', family: 'tart', kind: 'pastry', steps: [S('rub', 3), S('fold', 2)], shapeMode: 'line', pieces: 3, assemblyParts: 2,
+    method: 'rub', family: 'tart', kind: 'pastry', steps: [S('rub', 3), S('fold', 2), R('chill', 10)], shapeMode: 'line', pieces: 3, assemblyParts: 2,
     ingredients: [ingredient('Plain flour', 240), ingredient('Cold butter', 120), ingredient('Icing sugar', 70), ingredient('Beaten eggs', 50)],
     temp: 180, bakeTime: 26, coolTime: 8, flavours: ['vanilla', 'lemon', 'berry', 'raspberry', 'almond', 'pistachio', 'rose'], fillings: ['vanilla-custard', 'lemon-curd', 'whipped-cream'], finishes: ['glaze', 'cream-finish', 'nut-crunch'],
     tip: 'Keep the case neat all around its rim. A smooth filling gives the fruit a level stage.', technicalHint: 'Crisp pastry and a restrained finish let the fruit shine.', decorTarget: 5,
   }),
   extraRecipe(5, 0, {
     id: 'butter-brioche', name: 'Butter-kissed brioche', description: 'Knead a rich, soft dough and shape it into a beautifully golden loaf for the final tea table.',
-    method: 'knead', family: 'bread', kind: 'bread', steps: [S('knead', 4), S('fold', 3)], shapeMode: 'plait', pieces: 4, assemblyParts: 1,
+    method: 'knead', family: 'bread', kind: 'bread', steps: [S('knead', 4), S('fold', 3), R('prove', 14)], shapeMode: 'plait', pieces: 4, assemblyParts: 1,
     ingredients: [ingredient('Strong bread flour', 350), ingredient('Beaten eggs', 180), ingredient('Soft butter', 120), ingredient('Fast-action yeast', 7)],
     temp: 180, bakeTime: 30, coolTime: 9, flavours: ['vanilla', 'orange', 'cinnamon', 'almond', 'caramel', 'ginger'], fillings: ['none', 'cinnamon-butter', 'salted-caramel'], finishes: ['glaze', 'icing', 'nut-crunch', 'caramel-drizzle'],
     tip: 'Rich dough needs patience to become elastic. Even strands produce an even rise.', technicalHint: 'Finish kneading before you start the plait.', decorTarget: 4,
@@ -463,11 +553,15 @@ const EXTRA_RECIPES = [
 ];
 
 export const ALL_RECIPES = [...WEEKS.flatMap(week => week.recipes), ...EXTRA_RECIPES];
-// Challenge clocks are fixed by round, independently of baking-station timings.
-for (const recipe of ALL_RECIPES) {
-  recipe.budget = recipe.round === 'Showstopper' ? 240
-    : recipe.round === 'Technical' ? 210 : 180;
+// Challenge clocks start from the round and grow with work that cannot overlap:
+// rests run alongside component work, but a baker still has to wait for them.
+const ROUND_CLOCK = { Signature: 205, Technical: 225, Showstopper: 285 };
+export function budgetFor(recipe) {
+  const rests = (recipe.steps ?? []).reduce((sum, step) => sum + (step.rest ?? 0), 0);
+  const raw = (ROUND_CLOCK[recipe.round] ?? 205) + rests + (recipe.needsCase ? 12 : 0) + Math.max(0, (recipe.decorTarget ?? 3) - 6) * 4;
+  return Math.ceil(raw / 5) * 5;
 }
+for (const recipe of ALL_RECIPES) recipe.budget = budgetFor(recipe);
 const RECIPE_BY_ID = new Map(ALL_RECIPES.map(recipe => [recipe.id, recipe]));
 const ROUND_CHOICES = [
   [['garden-sponge', 'swiss-roll', 'marble-loaf'], ['lemon-madeleines'], ['orchard-celebration', 'celebration-cupcake-tower']],
@@ -515,3 +609,16 @@ export const BRIEFS = [
     { title: 'The village in celebration', description: 'Build a grand village cake or miniature bake-house. At least three structural parts and seven finishing touches tell your story.', minParts: 3, minDecor: 7 },
   ],
 ];
+// What a baker's own creation must be to answer each brief.
+const BRIEF_KINDS = [
+  [['cake'], ['cake'], ['cake']],
+  [['biscuit'], ['biscuit'], ['biscuit']],
+  [['bread'], ['bread'], ['bread']],
+  [['pastry'], ['pastry'], ['pastry']],
+  [['dessert', 'pastry'], ['dessert'], ['dessert', 'pastry', 'cake']],
+  [['cake', 'pastry', 'bread', 'biscuit', 'dessert'], ['biscuit'], ['cake', 'pastry', 'bread', 'biscuit', 'dessert']],
+];
+BRIEFS.forEach((week, w) => week.forEach((brief, r) => {
+  brief.kinds = BRIEF_KINDS[w][r];
+  brief.maxParts = r === 0 ? 3 : 9;
+}));

@@ -158,7 +158,7 @@ function decorationLocations(bake, count) {
   const recipe = recipeFor(bake), locations = [];
   for (let y = 175; y <= 350; y += 25) {
     for (let x = 190; x <= 515; x += 35) {
-      const snapped = snapDecoration({ kind: recipe.kind, recipeId: recipe.id, layers: recipe.assemblyParts }, x, y);
+      const snapped = snapDecoration({ kind: recipe.kind, recipeId: recipe.art || recipe.id, layers: recipe.assemblyParts }, x, y);
       if (!locations.some(point => Math.hypot(point.snapped.x - snapped.x, point.snapped.y - snapped.y) < .09)) locations.push({ x, y, snapped });
     }
   }
@@ -192,7 +192,15 @@ function playStages(ui, { mode = 'run', poor = false, stopAt = 'judged', visited
       case 'prepare':
         for (let attempt = 0; attempt < 100 && !currentTechnique(read()).done; attempt++) {
           const task = currentTechnique(read());
-          timeAction(ui, 'technique', task.expected, mode, task.zone);
+          if (task.rest) {
+            let actionsAt = -5;
+            waitFor(ui, () => {
+              const now = read(), current = currentComponent(now);
+              if (!poor && current && !current.done && now.elapsed - actionsAt >= .65 && Math.abs(now.phase - (current.zone[0] + current.zone[1]) / 2) < 3) { ui.click('component'); actionsAt = now.elapsed; }
+              return poor || currentTechnique(now).readiness >= task.window[0] + .08;
+            }, `${r.id} rest`, 2400);
+            ui.click('technique', 'ready');
+          } else timeAction(ui, 'technique', task.expected, mode, task.zone);
         }
         assert.ok(currentTechnique(read()).done, `${r.id} preparation completes`);
         ui.click('prepared');
@@ -206,6 +214,7 @@ function playStages(ui, { mode = 'run', poor = false, stopAt = 'judged', visited
         break;
       case 'bake': {
         ui.input('heat', t.temp);
+        if (!poor && ui.query('[data-action="blind-bake"]')) ui.click('blind-bake');
         let rotated = false, actionsAt = -5;
         if (!poor) {
           waitFor(ui, () => {
@@ -239,6 +248,7 @@ function playStages(ui, { mode = 'run', poor = false, stopAt = 'judged', visited
           if (!poor) timeAction(ui, 'spread', undefined, mode, b.assemblyZone || [25, 80]);
           timeAction(ui, 'place-layer', undefined, mode, b.assemblyZone || [25, 80]);
         }
+        if (!poor && ui.query('#crumb-coat') && !ui.query('#crumb-coat').disabled) ui.click('crumb-coat');
         ui.click('assembled');
         break;
       case 'decorate':
@@ -506,5 +516,81 @@ test('practice is isolated, decoration supports tapping and dragging, and overdu
   assert.equal(currentBake(ui, 'practice').score.timePenalty, 0, 'Untimed practice must never deduct overtime points');
   assert.deepEqual(ui.savedState().season, initial.season);
   assert.deepEqual(ui.savedState().run, initial.run);
+  ui.close();
+});
+
+test('a baker can create their own signature, survive a reload, and be judged on it', async () => {
+  let ui = await boot();
+  ui.click('new');
+  ui.click('brief-tab', 'custom');
+  const bases = [...ui.window.document.querySelectorAll('[data-action="build-base"]')].map(el => el.dataset.value);
+  assert.ok(bases.includes('sponge') && !bases.includes('lean'), 'cake week offers cake bases only');
+  ui.click('build-base', 'sponge');
+  ui.click('build-form', 'cupcakes');
+  ui.input('sweetness', 1);
+  ui.input('inclusion', 'chocolate');
+  ui.input('flavour', 'chocolate');
+  ui.input('strength', 'bold');
+  assert.equal(ui.savedState().run.custom.form, 'cupcakes');
+  ui.click('start');
+  let b = currentBake(ui);
+  assert.equal(b.customRecipe.form, 'cupcakes');
+  assert.equal(b.strength, 'bold');
+  assert.ok(b.customRecipe.ingredients.some(item => item.name === 'Chocolate chunks'));
+  playStages(ui, { stopAt: 'prepare' });
+  const saved = ui.savedState();
+  ui.close();
+  ui = await boot(saved);
+  ui.click('continue');
+  assert.deepEqual(currentBake(ui).customRecipe, saved.run.bake.customRecipe, 'the creation survives a reload');
+  const score = playStages(ui);
+  assert.ok(score.total >= 85, `Custom cupcakes scored ${score.total}; ${score.notes.join(' ')}`);
+  assert.ok(ui.query('.rival-verdict'), 'rival bakes are shown with a judge’s verdict');
+  assert.ok(ui.savedState().records['custom-sponge-cupcakes'] >= 85);
+  ui.close();
+});
+
+test('the practice kitchen offers a blank page, outside the competition', async () => {
+  const ui = await boot();
+  ui.click('new');
+  const season = ui.savedState().season;
+  ui.click('home');
+  ui.click('practice');
+  ui.click('practice-create');
+  ui.click('build-base', 'lean');
+  ui.click('build-form', 'focaccia');
+  ui.input('flavour', 'herb');
+  ui.click('start');
+  assert.equal(currentBake(ui, 'practice').customRecipe.base, 'lean');
+  const score = playStages(ui, { mode: 'practice' });
+  assert.ok(score.total >= 85, `Practice focaccia scored ${score.total}; ${score.notes.join(' ')}`);
+  assert.deepEqual(ui.savedState().season, season);
+  ui.close();
+});
+
+test('decorations can be picked up, turned, recoloured and removed on the bench', async () => {
+  const ui = await boot();
+  ui.click('new');
+  ui.click('start');
+  playStages(ui, { stopAt: 'decorate' });
+  ui.click('decor-pattern', 'ring');
+  ui.input('decor-count', 4);
+  ui.pointer('pointerdown', ui.query('#decor-surface'), { x: 350, y: 230 });
+  ui.pointer('pointerup');
+  let b = currentBake(ui);
+  assert.equal(b.decorations.length, 4, 'one tap places a whole ring');
+  ui.click('decor-tool', 'adjust');
+  const first = b.decorations[0];
+  ui.pointer('pointerdown', ui.query('#decor-surface'), { x: 100 + first.x * 500, y: 150 + first.y * 200 });
+  ui.pointer('pointermove', ui.window.document, { x: 100 + first.x * 500 - 40, y: 150 + first.y * 200 + 10 });
+  ui.pointer('pointerup');
+  b = currentBake(ui);
+  assert.notDeepEqual([b.decorations[0].x, b.decorations[0].y], [first.x, first.y], 'dragging moves the decoration');
+  assert.ok(ui.query('[data-action="decor-remove"]'), 'the adjust panel opens for the picked decoration');
+  ui.input('decor-angle', 40);
+  assert.equal(currentBake(ui).decorations[0].angle, 40);
+  ui.click('decor-remove');
+  assert.equal(currentBake(ui).decorations.length, 3);
+  assert.ok(ui.query('#look-hint').textContent.length > 5, 'the bench says what the judges will notice');
   ui.close();
 });
