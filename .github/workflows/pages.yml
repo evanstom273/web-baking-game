@@ -25,6 +25,17 @@ jobs:
         uses: actions/checkout@v6
       - name: Configure Pages
         uses: actions/configure-pages@v5
+      # Pages lets browsers reuse files for ten minutes. Stamping every module and
+      # stylesheet with this commit means a visitor always loads one matching set,
+      # never new app code alongside a stale engine.
+      - name: Version file addresses
+        run: |
+          v="${GITHUB_SHA::8}"
+          sed -i -E "s#from '\./([A-Za-z0-9_-]+)\.js'#from './\1.js?v=${v}'#g" dist/*.js
+          sed -i -E "s#(href|src)=\"\./([A-Za-z0-9_-]+)\.(js|css)\"#\1=\"./\2.\3?v=${v}\"#g" dist/index.html
+          if grep -nE "from '\./[^'?]+\.js'" dist/*.js || grep -nE "(href|src)=\"\./[^\"?]+\.(js|css)\"" dist/index.html; then
+            echo "Unversioned file addresses remain" >&2; exit 1
+          fi
       - name: Upload game
         uses: actions/upload-pages-artifact@v4
         with:
